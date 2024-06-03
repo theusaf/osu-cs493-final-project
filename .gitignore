@@ -1,2 +1,9 @@
+# Packages
 node_modules
 *-lock.*
+
+# Environment
+.env.*
+
+# Build
+dist
