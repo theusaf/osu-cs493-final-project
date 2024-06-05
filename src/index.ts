@@ -5,6 +5,7 @@ import coursesRouter from "./api/courses.js";
 import usersRouter from "./api/users.js";
 import express, { ErrorRequestHandler } from "express";
 import dotenv from "dotenv";
+import { withAuthenticated } from "./util/authentication.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: join(__dirname, ".env.local") });
@@ -13,6 +14,7 @@ const app = express();
 
 // Middleware
 app.use(express.json());
+app.use(withAuthenticated);
 
 // Rate-Limiting Middleware
 app.use((req, res, next) => {
