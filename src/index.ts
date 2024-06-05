@@ -21,11 +21,15 @@ app.use((req, res, next) => {
 });
 
 // Main Routes
-app.use(assignmentsRouter);
-app.use(coursesRouter);
-app.use(usersRouter);
+app.use("/assignments", assignmentsRouter);
+app.use("/courses", coursesRouter);
+app.use("/users", usersRouter);
 
 // Fallback and Error Routes
+app.use((_req, res) => {
+  res.status(404).json({ message: "Not Found" });
+});
+
 app.use(((err, _req, res, _next) => {
   res.status(500).json({ message: err.message });
 }) as ErrorRequestHandler);
