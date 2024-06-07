@@ -7,14 +7,14 @@ export interface UserType extends ModelType {
   name: string;
   email: string;
   password: string;
-  role: string;
+  role: "admin" | "student" | "instructor";
 }
 
 export class User extends Model implements UserType {
   name: string;
   email: string;
   password: string;
-  role: string;
+  role: "admin" | "student" | "instructor";
 
   constructor(data: UserType) {
     super(data.id, FirestoreCollection.USERS);
