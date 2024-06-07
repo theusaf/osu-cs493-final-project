@@ -4,6 +4,7 @@ const router = Router();
 
 router.get("/:id", (req, res) => {
   const userId = req.params.id;
+  // TODO: Implement
   res.json({
     name: "Jane Doe",
     email: "doej@oregonstate.edu",
@@ -14,6 +15,7 @@ router.get("/:id", (req, res) => {
 
 router.post("/", (req, res) => {
   const userData = req.body;
+  // TODO: Implement
   res.status(201).json({
     id: 123,
   });
@@ -21,6 +23,7 @@ router.post("/", (req, res) => {
 
 router.post("/login", (req, res) => {
   const { email, password } = req.body;
+  // TODO: Implement
   res.json({
     token: "aaaaaaaa.bbbbbbbb.cccccccc",
   });
