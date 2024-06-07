@@ -63,10 +63,6 @@ export interface AuthenticatedRequest extends Request {
 
 /**
  * Middleware to read the user's session token and add the user ID to the request.
- *
- * @param req
- * @param _
- * @param next
  */
 export function withAuthenticated(
   req: AuthenticatedRequest,
@@ -100,7 +96,7 @@ interface RequireAuthenticatedOptions {
  *
  * If needing to accept requests where authentication is optional, use custom middleware or logic instead.
  *
- * @param opts Options for the middleware.
+ * @param opts Options for the middleware. If omitted, only requires the user to be authenticated.
  */
 export function requireAuthentication(opts?: RequireAuthenticatedOptions) {
   const { role, filter } = opts ?? {};
