@@ -11,4 +11,14 @@ function requiredInBody(required: string[]) {
     };
 }
 
-export { requiredInBody };
+function allowedInBody(required: string[]) {
+    return (req: Request, res: Response, next: NextFunction) => {
+        for (var attr of req.body) {
+            if (!(attr in required)) {
+                delete req.body[attr];
+            }
+        }
+        next();
+    };
+}
+export { requiredInBody, allowedInBody };
