@@ -1,6 +1,7 @@
 import argon2 from "argon2";
 import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import { User, UserType } from "../models/users.js";
 
 /**
  * Hashes a plaintext password.
@@ -60,9 +61,16 @@ export interface AuthenticatedRequest extends Request {
   userId?: string | null;
 }
 
+/**
+ * Middleware to read the user's session token and add the user ID to the request.
+ *
+ * @param req
+ * @param _
+ * @param next
+ */
 export function withAuthenticated(
   req: AuthenticatedRequest,
-  res: Response,
+  _: Response,
   next: NextFunction,
 ) {
   const userId = extractSession(req);
@@ -72,17 +80,42 @@ export function withAuthenticated(
 
 type Awaitable<T> = T | Promise<T>;
 
+/**
+ * Middleware to require authentication. Upon failure, responds with a 403 Forbidden response.
+ *
+ * @param opts
+ */
 export function requireAuthentication(opts?: {
-  admin?: boolean;
+  role?: UserType["role"] | UserType["role"][];
   filter?: (req: AuthenticatedRequest) => Awaitable<boolean>;
 }) {
-  const { admin = false, filter } = opts ?? {};
+  const { role, filter } = opts ?? {};
   return async (
     req: AuthenticatedRequest,
     res: Response,
     next: NextFunction,
   ): Promise<void> => {
-    // TODO: Implement
+    const sendError = () => {
+      res.status(403).send({
+        error: "Unauthorized",
+      });
+    };
+
+    if (!req.userId) return sendError();
+    const user = await User.findById(req.userId);
+    if (!user) return sendError();
+    if (user.role !== "admin") {
+      if (role) {
+        if (Array.isArray(role)) {
+          if (!role.includes(user.role)) return sendError();
+        } else {
+          if (role !== user.role) return sendError();
+        }
+      }
+      if (filter) {
+        if (!(await filter(req))) return sendError();
+      }
+    }
     next();
   };
 }
