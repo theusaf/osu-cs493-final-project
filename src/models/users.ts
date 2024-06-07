@@ -1,26 +1,47 @@
-import { Model, ModelType } from "./model.js"
+import { connection, executeQuery } from "../firebase.js";
+import { QueryOptions } from "../types/database.js";
+import { FirestoreCollection } from "../util/constants.js";
+import { Model, ModelType } from "./model.js";
 
 export interface UserType extends ModelType {
-    //Fields
-    name: string;
-    email: string;
-    password: string;
-    role: string;
+  name: string;
+  email: string;
+  password: string;
+  role: string;
 }
 
+export class User extends Model implements UserType {
+  name: string;
+  email: string;
+  password: string;
+  role: string;
 
-export class Users extends Model implements UserType {
-    //Fields
-    name: string;
-    email: string;
-    password: string;
-    role: string;
+  constructor(data: UserType) {
+    super(data.id, FirestoreCollection.USERS);
+    this.name = data.name;
+    this.email = data.email;
+    this.password = data.password;
+    this.role = data.role;
+  }
 
-    constructor(data: UserType) {
-        super(data.id)
-        this.name = data.name;
-        this.email = data.email;
-        this.password = data.password;
-        this.role = data.role;
-    }
+  toJSON(): UserType {
+    return {
+      id: this.id,
+      name: this.name,
+      email: this.email,
+      password: this.password,
+      role: this.role,
+    };
+  }
+
+  static async findById(id: string): Promise<User> {
+    return (await User.findAll({ where: { id }, limit: 1 }))[0];
+  }
+
+  static async findAll(options?: QueryOptions<UserType>): Promise<User[]> {
+    const query = connection.collection(FirestoreCollection.USERS);
+    return (await executeQuery<UserType>(query, options)).map((data) => {
+      return new User(data);
+    });
+  }
 }
