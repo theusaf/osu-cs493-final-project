@@ -62,8 +62,8 @@ export interface PartiallyAuthenticatedRequest extends Request {
 }
 
 export interface AuthenticatedRequest extends Request {
-  userId: string;
-  user: User;
+  userId?: string;
+  user?: User;
 }
 
 /**
