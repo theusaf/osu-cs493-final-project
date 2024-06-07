@@ -1,4 +1,6 @@
 import { Router } from "express";
+import { createSessionToken, verify } from "../util/authentication.js";
+import { User } from "../models/users.js";
 
 const router = Router();
 
@@ -21,11 +23,21 @@ router.post("/", (req, res) => {
   });
 });
 
-router.post("/login", (req, res) => {
+router.post("/login", async (req, res) => {
   const { email, password } = req.body;
-  // TODO: Implement
+  const sendError = () => {
+    res.status(401).json({
+      error: "Invalid email or password",
+    });
+  };
+  if (typeof email !== "string" || typeof password !== "string") {
+    return sendError();
+  }
+  const [user] = await User.findAll({ where: { email }, limit: 1 });
+  if (!user) return sendError();
+  if (!(await verify(user.password, password))) return sendError();
   res.json({
-    token: "aaaaaaaa.bbbbbbbb.cccccccc",
+    token: createSessionToken(user.id),
   });
 });
 
