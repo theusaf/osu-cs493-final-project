@@ -80,15 +80,29 @@ export function withAuthenticated(
 
 type Awaitable<T> = T | Promise<T>;
 
+interface RequireAuthenticatedOptions {
+  /**
+   * The role(s) required to access the route.
+   */
+  role?: UserType["role"] | UserType["role"][];
+
+  /**
+   * A function to filter requests based on additional criteria.
+   *
+   * @param req The request.
+   * @returns Whether the request is allowed.
+   */
+  filter?: (req: AuthenticatedRequest) => Awaitable<boolean>;
+}
+
 /**
  * Middleware to require authentication. Upon failure, responds with a 403 Forbidden response.
  *
- * @param opts
+ * If needing to accept requests where authentication is optional, use custom middleware or logic instead.
+ *
+ * @param opts Options for the middleware.
  */
-export function requireAuthentication(opts?: {
-  role?: UserType["role"] | UserType["role"][];
-  filter?: (req: AuthenticatedRequest) => Awaitable<boolean>;
-}) {
+export function requireAuthentication(opts?: RequireAuthenticatedOptions) {
   const { role, filter } = opts ?? {};
   return async (
     req: AuthenticatedRequest,
