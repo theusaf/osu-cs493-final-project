@@ -1,1 +1,44 @@
-[]
+[
+  {
+    "courseId": 201,
+    "title": "Assignment 1",
+    "points": 10,
+    "due": "2022-06-14T17:00:00-07:00"
+  },
+  {
+    "courseId": 201,
+    "title": "Assignment 2",
+    "points": 10,
+    "due": "2022-06-14T17:00:00-07:00"
+  },
+  {
+    "courseId": 205,
+    "title": "Assignment 3",
+    "points": 100,
+    "due": "2022-06-14T17:00:00-07:00"
+  },
+  {
+    "courseId": 210,
+    "title": "Assignment 4",
+    "points": 100,
+    "due": "2022-06-14T17:00:00-07:00"
+  },
+  {
+    "courseId": 203,
+    "title": "Exam 1",
+    "points": 100,
+    "due": "2022-06-14T17:00:00-07:00"
+  },
+  {
+    "courseId": 204,
+    "title": "Assignment 5",
+    "points": 100,
+    "due": "2022-06-14T17:00:00-07:00"
+  },
+  {
+    "courseId": 206,
+    "title": "Exploration 25",
+    "points": 25,
+    "due": "2022-06-14T17:00:00-07:00"
+  }
+]
