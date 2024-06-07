@@ -27,6 +27,7 @@ export abstract class Model {
         .collection(this.#table)
         .add(this.toJSON());
       this.id = docRef.id;
+      await connection.collection(this.#table).doc(this.id).set(this.toJSON());
     } else {
       await connection.collection(this.#table).doc(this.id).set(this.toJSON());
     }
