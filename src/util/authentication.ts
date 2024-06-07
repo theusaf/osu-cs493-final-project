@@ -57,15 +57,20 @@ export function extractSession(req: Request): string | null {
   }
 }
 
-export interface AuthenticatedRequest extends Request {
+export interface PartiallyAuthenticatedRequest extends Request {
   userId?: string | null;
+}
+
+export interface AuthenticatedRequest extends Request {
+  userId: string;
+  user: User;
 }
 
 /**
  * Middleware to read the user's session token and add the user ID to the request.
  */
 export function withAuthenticated(
-  req: AuthenticatedRequest,
+  req: PartiallyAuthenticatedRequest,
   _: Response,
   next: NextFunction,
 ) {
@@ -113,6 +118,7 @@ export function requireAuthentication(opts?: RequireAuthenticatedOptions) {
 
     if (!req.userId) return sendError();
     const user = await User.findById(req.userId);
+    req.user = user;
     if (!user) return sendError();
     if (user.role !== "admin") {
       if (role) {
