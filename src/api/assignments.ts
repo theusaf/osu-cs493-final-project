@@ -1,5 +1,4 @@
 import { Router, Request, Response, NextFunction} from "express";
-import {collection} from "firebase/firestore";
 import { requiredInBody } from "../util/middleware.js";
 import { requireAuthentication } from "../util/authentication.js";
 
