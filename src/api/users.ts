@@ -1,6 +1,11 @@
 import { Router } from "express";
-import { createSessionToken, verify } from "../util/authentication.js";
-import { User } from "../models/users.js";
+import {
+  PartiallyAuthenticatedRequest,
+  createSessionToken,
+  hash,
+  verify,
+} from "../util/authentication.js";
+import { User, UserType } from "../models/users.js";
 
 const router = Router();
 
@@ -15,11 +20,43 @@ router.get("/:id", (req, res) => {
   });
 });
 
-router.post("/", (req, res) => {
+router.post("/", async (req: PartiallyAuthenticatedRequest, res) => {
+  const loggedUserId = req.userId;
   const userData = req.body;
-  // TODO: Implement
+  if (
+    typeof userData.name !== "string" ||
+    typeof userData.email !== "string" ||
+    typeof userData.password !== "string" ||
+    typeof userData.role !== "string"
+  ) {
+    return res.status(400).json({
+      error: "Invalid data",
+    });
+  }
+  if (!["admin", "instructor", "student"].includes(userData.role)) {
+    return res.status(400).json({
+      error: "Invalid data",
+    });
+  }
+  if (["admin", "instructor"].includes(userData.role)) {
+    const sendUnauthorized = () => {
+      res.status(403).json({
+        error: "Unauthorized",
+      });
+    };
+    if (!loggedUserId) return sendUnauthorized();
+    const user = await User.findById(loggedUserId);
+    if (user.role !== "admin") return sendUnauthorized();
+  }
+  const newUser = new User({
+    name: userData.name,
+    email: userData.email,
+    password: await hash(userData.password),
+    role: userData.role,
+  });
+  await newUser.save();
   res.status(201).json({
-    id: 123,
+    id: newUser.id,
   });
 });
 
@@ -37,7 +74,7 @@ router.post("/login", async (req, res) => {
   if (!user) return sendError();
   if (!(await verify(user.password, password))) return sendError();
   res.json({
-    token: createSessionToken(user.id),
+    token: createSessionToken(user.id!),
   });
 });
 
