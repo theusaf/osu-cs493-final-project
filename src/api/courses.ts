@@ -10,6 +10,7 @@ import { QueryOptions } from "../types/database.js";
 import { Course, CourseType } from "../models/courses.js";
 import { PAGE_SIZE } from "../util/constants.js";
 import { allowedInBody, requiredInBody } from "../util/middleware.js";
+import { User } from "../models/users.js";
 
 const router = Router();
 
@@ -47,11 +48,19 @@ router.get(
       return res.status(404).json({error: "Course not found"});
     }
 
-    const studentRoster = await connection.collection('users').where('id', 'in', course.studentIds).get();
-    const students = studentRoster.docs.map(doc => doc.data());
+    const studentRoster = await User.findAll({where: 
+      {
+        $in: 
+        [
+          {
+            id: course.studentIds
+          },
+        ],
+      }
+    });
 
     //extract student info
-    const studentData = students.map(student=> ({
+    const studentData = studentRoster.map(student=> ({
       id: student.id,
       name: student.name,
       email: student.email,
