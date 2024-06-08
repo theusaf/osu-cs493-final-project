@@ -1,4 +1,4 @@
-import { Router, Request, Response, NextFunction } from "express";
+import { Router } from "express";
 import { allowedInBody, requiredInBody } from "../util/middleware.js";
 import { requireAuthentication } from "../util/authentication.js";
 import { Course } from "../models/courses.js";

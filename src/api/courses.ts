@@ -194,7 +194,7 @@ router.post(
 
 router.get("/", async (req, res) => {
   const { page, subject, number, term } = req.query;
-  let resultPage = Math.max(Number(page) || 1) || 1;
+  const resultPage = Math.max(Number(page) || 1) || 1;
   const options: QueryOptions<CourseType> = {
     limit: PAGE_SIZE,
     cursor: (resultPage - 1) * PAGE_SIZE,
