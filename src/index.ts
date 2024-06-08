@@ -11,6 +11,7 @@ import usersRouter from "./api/users.js";
 import express, { ErrorRequestHandler } from "express";
 import { withAuthenticated } from "./util/authentication.js";
 import { ratelimit } from "./util/ratelimit.js";
+import { initDatabase } from "./initDatabase.js";
 
 const app = express();
 
@@ -36,6 +37,8 @@ app.use(((err, _req, res, _next) => {
   console.error(err);
   res.status(500).json({ message: err.message });
 }) as ErrorRequestHandler);
+
+await initDatabase();
 
 app.listen(process.env.PORT ?? 3000, () => {
   console.log(
