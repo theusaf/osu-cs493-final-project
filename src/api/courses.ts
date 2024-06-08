@@ -1,10 +1,16 @@
 import { Router } from "express";
+import {
+  AuthenticatedRequest,
+  requireAuthentication,
+} from "../util/authentication.js";
 import { Assignment } from "../models/assignments.js";
+import { Parser } from "json2csv";
+import { connection } from "../firebase.js";
 import { QueryOptions } from "../types/database.js";
 import { Course, CourseType } from "../models/courses.js";
 import { PAGE_SIZE } from "../util/constants.js";
-import { requireAuthentication } from "../util/authentication.js";
 import { allowedInBody, requiredInBody } from "../util/middleware.js";
+import { User } from "../models/users.js";
 
 const router = Router();
 
@@ -23,13 +29,54 @@ router.get("/:id/assignments", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
-router.get("/:id/roster", (req, res) => {
-  const courseId = req.params.id;
-  // TODO: Implement
+//Not positive this works. Can you take a look at it daniel?
+router.get(
+  "/:id/roster",
+  requireAuthentication({
+    filter: (req: AuthenticatedRequest) => {
+      const user = req.user!;
+      return user.role === "instructor" || user.role === "admin";
+    },
+  }),
+  async (req: AuthenticatedRequest, res) => {
+    const courseId = req.params.id;
   try {
-  } catch (error) {}
-  res.send('123,"Jane Doe",doej@oregonstate.edu\n...');
+  
+    const course = await Course.findById(courseId);
+
+    if (!course) {
+      return res.status(404).json({error: "Course not found"});
+    }
+
+    const studentRoster = await User.findAll({where: 
+      {
+        $in: 
+        [
+          {
+            id: course.studentIds
+          },
+        ],
+      }
+    });
+
+    //extract student info
+    const studentData = studentRoster.map(student=> ({
+      id: student.id,
+      name: student.name,
+      email: student.email,
+    }));
+
+    // Convert the student information to CSV
+    const json2csvParser = new Parser({ fields: ['id', 'name', 'email'] });
+    const csv = json2csvParser.parse(studentData);
+
+    res.setHeader('Content-Disposition', `attachment; filename=roster_${courseId}.csv`);
+    res.setHeader('Content-Type', 'text/csv');
+    res.send(csv);
+    } catch (error) {
+      console.error('Error fetching course roster:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 router.post("/:id/students", (req, res) => {
