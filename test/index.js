@@ -5,8 +5,10 @@ export async function displayFetch(input, init) {
   const res = await fetch(input, init);
   const oldJson = res.json;
   const oldText = res.text;
+  console.log(`==> Status: ${res.status}\n`);
   res.json = function () {
     return oldJson.apply(this, arguments).then((json) => {
+      console.log("==> Body:");
       console.log(JSON.stringify(json, null, 2));
       console.log(`=====${"=".repeat(input.toString().length)}=====`);
       return json;
@@ -14,6 +16,7 @@ export async function displayFetch(input, init) {
   };
   res.text = function () {
     return oldText.apply(this, arguments).then((text) => {
+      console.log("==> Body:");
       console.log(text);
       console.log(`=====${"=".repeat(input.toString().length)}=====`);
       return text;
