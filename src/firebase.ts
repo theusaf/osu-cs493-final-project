@@ -4,6 +4,7 @@ import { QueryOptions, QueryWhereOptions } from "./types/database.js";
 
 admin.initializeApp({
   credential: admin.credential.cert(
+    console.log(process.env.FIREBASE_CREDENTIALS);
     JSON.parse(process.env.FIREBASE_CREDENTIALS!),
   ),
 });
