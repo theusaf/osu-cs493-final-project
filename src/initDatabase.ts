@@ -27,15 +27,15 @@ export const initDatabase = async () => {
   try {
     await checkData(
       FirestoreCollection.USERS,
-      path.join(__dirname, "users.json"),
+      path.join(__dirname, "data/users.json"),
     );
     await checkData(
       FirestoreCollection.ASSIGNMENTS,
-      path.join(__dirname, "assignments.json"),
+      path.join(__dirname, "data/assignments.json"),
     );
     await checkData(
       FirestoreCollection.COURSES,
-      path.join(__dirname, "courses.json"),
+      path.join(__dirname, "data/courses.json"),
     );
   } catch (error) {
     console.error("Error initializing database:", error);
