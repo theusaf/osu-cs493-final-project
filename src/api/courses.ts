@@ -129,12 +129,15 @@ router.patch(
       return res.status(404).json({ error: "Course not found" });
     }
     if (typeof subject === "string") course.subject = subject;
-    if (typeof number === "string") course.classNumber = number;
+    if (typeof number === "string") course.number = number;
     if (typeof title === "string") course.title = title;
     if (typeof term === "string") course.term = term;
     if (typeof instructorId === "string") course.instructorId = instructorId;
     await course.save();
-    const data: Record<string, unknown> = course.toJSON();
+    const data: Record<string, unknown> = course.toJSON() as unknown as Record<
+      string,
+      unknown
+    >;
     delete data.studentIds;
     res.send(data);
   },
@@ -144,7 +147,10 @@ router.get("/:id", async (req, res) => {
   const courseId = req.params.id;
   const course = await Course.findById(courseId);
   if (course) {
-    const data: Record<string, unknown> = course.toJSON();
+    const data: Record<string, unknown> = course.toJSON() as unknown as Record<
+      string,
+      unknown
+    >;
     delete data.studentIds;
     res.json(data);
   } else {
@@ -173,7 +179,7 @@ router.post(
     }
     const course = new Course({
       subject,
-      classNumber: number,
+      number: number,
       title,
       term,
       instructorId,
@@ -195,12 +201,13 @@ router.get("/", async (req, res) => {
     where: {},
   };
   if (subject) options.where!.subject = `${subject}`;
-  if (number) options.where!.classNumber = `${number}`;
+  if (number) options.where!.number = `${number}`;
   if (term) options.where!.term = `${term}`;
   const results = await Course.findAll(options);
   res.json({
     courses: results.map((course) => {
-      const data: Record<string, unknown> = course.toJSON();
+      const data: Record<string, unknown> =
+        course.toJSON() as unknown as Record<string, unknown>;
       delete data.studentIds;
       return data;
     }),
