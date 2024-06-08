@@ -5,19 +5,21 @@ import { Model, ModelType } from "./model.js";
 
 export interface CourseType extends ModelType {
   subject: string;
-  classNumber: number;
+  classNumber: string;
   title: string;
   term: string;
-  instructorId: number;
+  instructorId: string;
+  studentIds: string[];
 }
 
 export class Course extends Model implements CourseType {
   //Fields
   subject: string;
-  classNumber: number;
+  classNumber: string;
   title: string;
   term: string;
-  instructorId: number;
+  instructorId: string;
+  studentIds: string[];
 
   constructor(data: CourseType) {
     super(data.id, FirestoreCollection.COURSES);
@@ -26,6 +28,7 @@ export class Course extends Model implements CourseType {
     this.title = data.title;
     this.term = data.term;
     this.instructorId = data.instructorId;
+    this.studentIds = data.studentIds;
   }
 
   toJSON(): CourseType {
@@ -36,6 +39,7 @@ export class Course extends Model implements CourseType {
       title: this.title,
       term: this.term,
       instructorId: this.instructorId,
+      studentIds: this.studentIds,
     };
   }
 

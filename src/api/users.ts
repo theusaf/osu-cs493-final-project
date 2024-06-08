@@ -1,25 +1,56 @@
 import { Router } from "express";
 import {
+  AuthenticatedRequest,
   PartiallyAuthenticatedRequest,
   createSessionToken,
   hash,
+  requireAuthentication,
   verify,
 } from "../util/authentication.js";
 import { User } from "../models/users.js";
 import { requiredInBody } from "../util/middleware.js";
+import { Course } from "../models/courses.js";
 
 const router = Router();
 
-router.get("/:id", (req, res) => {
-  const userId = req.params.id;
-  // TODO: Implement
-  res.json({
-    name: "Jane Doe",
-    email: "doej@oregonstate.edu",
-    password: "hunter2",
-    role: "student",
-  });
-});
+router.get(
+  "/:id",
+  requireAuthentication({
+    filter: (req) => req.params.id !== req.userId,
+  }),
+  async (req: AuthenticatedRequest, res) => {
+    const userId = req.params.id;
+    const user = req.user!;
+    const baseInfo: Record<string, unknown> = {
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    };
+    if (user.role === "student") {
+      const courses = await Course.findAll({
+        where: {
+          $in: [
+            {
+              studentIds: [userId],
+            },
+          ],
+        },
+      });
+      res.json({
+        ...baseInfo,
+        courses: courses.map((course) => course.id),
+      });
+    } else if (user.role === "instructor") {
+      const courses = await Course.findAll({ where: { instructorId: userId } });
+      res.json({
+        ...baseInfo,
+        courses: courses.map((course) => course.id),
+      });
+    } else {
+      res.json(baseInfo);
+    }
+  },
+);
 
 router.post(
   "/",
@@ -76,7 +107,9 @@ router.post(
       });
     };
     if (typeof email !== "string" || typeof password !== "string") {
-      return sendError();
+      return res.status(400).json({
+        error: "Invalid data",
+      });
     }
     const [user] = await User.findAll({ where: { email }, limit: 1 });
     if (!user) return sendError();
