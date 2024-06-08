@@ -11,10 +11,10 @@ export function requiredInBody(required: string[]) {
   };
 }
 
-export function allowedInBody(required: string[]) {
+export function allowedInBody(allowed: string[]) {
   return (req: Request, _: Response, next: NextFunction) => {
-    for (var attr of req.body) {
-      if (!(attr in required)) {
+    for (const attr of req.body) {
+      if (!(attr in allowed)) {
         delete req.body[attr];
       }
     }

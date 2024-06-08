@@ -4,8 +4,8 @@ import { FirestoreCollection } from "../util/constants.js";
 import { Model, ModelType } from "./model.js";
 
 export interface SubmissionType extends ModelType {
-  assignmentId: number;
-  studentId: number;
+  assignmentId: string;
+  studentId: string;
   timestamp: string; //Date
   grade: number;
   file: string;
@@ -13,8 +13,8 @@ export interface SubmissionType extends ModelType {
 
 export class Submission extends Model implements SubmissionType {
   //Fields
-  assignmentId: number;
-  studentId: number;
+  assignmentId: string;
+  studentId: string;
   timestamp: string; //Date
   grade: number;
   file: string;
