@@ -54,11 +54,19 @@ router.get("/:id/students", (req, res) => {
   });
 });
 
-router.delete("/:id", (req, res) => {
-  const courseId = req.params.id;
-  // TODO: Implement
-  res.status(204).send();
-});
+router.delete(
+  "/:id",
+  requireAuthentication({ role: "admin" }),
+  async (req, res) => {
+    const courseId = req.params.id;
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ error: "Course not found" });
+    }
+    await course.delete();
+    res.status(204).send();
+  },
+);
 
 router.patch(
   "/:id",
