@@ -28,15 +28,10 @@ router.get("/:id/assignments", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-//Not positive this works. Can you take a look at it daniel?
+
 router.get(
   "/:id/roster",
-  requireAuthentication({
-    filter: (req: AuthenticatedRequest) => {
-      const user = req.user!;
-      return user.role === "instructor" || user.role === "admin";
-    },
-  }),
+  requireAuthentication({ role: "instructor" }),
   async (req: AuthenticatedRequest, res) => {
     const courseId = req.params.id;
     try {
@@ -54,7 +49,7 @@ router.get(
         },
       });
 
-      //extract student info
+      // Extract student info
       const studentData = studentRoster.map((student) => ({
         id: student.id,
         name: student.name,
