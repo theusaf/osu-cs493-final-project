@@ -62,6 +62,15 @@ router.delete("/:id", (req, res) => {
 
 router.patch(
   "/:id",
+  requireAuthentication({
+    role: "instructor",
+    filter: async (req) => {
+      const courseId = req.params.id;
+      const course = await Course.findById(courseId);
+      if (!course) return false;
+      return course.instructorId === req.userId;
+    },
+  }),
   allowedInBody(["subject", "number", "title", "term", "instructorId"]),
   async (req, res) => {
     const courseId = req.params.id;
