@@ -4,7 +4,7 @@ import { FirestoreCollection } from "../util/constants.js";
 import { Model, ModelType } from "./model.js";
 
 export interface AssignmentType extends ModelType {
-  courseId: number;
+  courseId: string;
   title: string;
   points: number;
 
@@ -15,7 +15,7 @@ export interface AssignmentType extends ModelType {
 }
 
 export class Assignment extends Model implements AssignmentType {
-  courseId: number;
+  courseId: string;
   title: string;
   points: number;
   due: string;

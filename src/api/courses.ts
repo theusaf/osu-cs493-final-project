@@ -1,25 +1,30 @@
 import { Router } from "express";
+import { Assignment } from "../models/assignments.js";
 
 const router = Router();
 
-router.get("/:id/assignments", (req, res) => {
+router.get("/:id/assignments", async (req, res) => {
   const courseId = req.params.id;
-  // TODO: Implement
-  res.json({
-    assignments: [
-      {
-        courseId: 123,
-        title: "Assignment 3",
-        points: 100,
-        due: "2022-06-14T17:00:00-07:00",
-      },
-    ],
-  });
+  try{
+    const assignments = await Assignment.findAll({ where: {
+      courseId
+    } });
+
+    res.json({assignments: assignments.map(a => a.toJSON())});
+  } catch (error) {
+    console.error("Error fetching assignments:", error)
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
 router.get("/:id/roster", (req, res) => {
   const courseId = req.params.id;
   // TODO: Implement
+  try {
+
+  } catch (error) {
+
+  }
   res.send('123,"Jane Doe",doej@oregonstate.edu\n...');
 });
 
