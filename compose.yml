@@ -1,6 +1,17 @@
 services:
   web:
     build: .
+    env_file:
+      - .env.local
+      - .env
+    environment:
+      - PORT=8000
+    expose:
+      - "8000"
+    ports:
+      - "8000:8000"
 
   redis:
     image: redis
+    expose:
+      - "6379"
