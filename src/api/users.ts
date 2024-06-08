@@ -29,11 +29,9 @@ router.get(
     if (user.role === "student") {
       const courses = await Course.findAll({
         where: {
-          $in: [
-            {
-              studentIds: [userId],
-            },
-          ],
+          $in: {
+            studentIds: [userId],
+          },
         },
       });
       res.json({
