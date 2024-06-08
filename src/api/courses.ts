@@ -4,7 +4,7 @@ import { QueryOptions } from "../types/database.js";
 import { Course, CourseType } from "../models/courses.js";
 import { PAGE_SIZE } from "../util/constants.js";
 import { requireAuthentication } from "../util/authentication.js";
-import { requiredInBody } from "../util/middleware.js";
+import { allowedInBody, requiredInBody } from "../util/middleware.js";
 
 const router = Router();
 
@@ -60,12 +60,27 @@ router.delete("/:id", (req, res) => {
   res.status(204).send();
 });
 
-router.patch("/:id", (req, res) => {
-  const courseId = req.params.id;
-  const courseData = req.body;
-  // TODO: Implement
-  res.send();
-});
+router.patch(
+  "/:id",
+  allowedInBody(["subject", "number", "title", "term", "instructorId"]),
+  async (req, res) => {
+    const courseId = req.params.id;
+    const { subject, number, title, term, instructorId } = req.body;
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ error: "Course not found" });
+    }
+    if (typeof subject === "string") course.subject = subject;
+    if (typeof number === "string") course.classNumber = number;
+    if (typeof title === "string") course.title = title;
+    if (typeof term === "string") course.term = term;
+    if (typeof instructorId === "string") course.instructorId = instructorId;
+    await course.save();
+    const data: Record<string, unknown> = course.toJSON();
+    delete data.studentIds;
+    res.send(data);
+  },
+);
 
 router.get("/:id", async (req, res) => {
   const courseId = req.params.id;
