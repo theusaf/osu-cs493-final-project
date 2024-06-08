@@ -32,9 +32,26 @@ router.get("/:id/submissions", (req, res) => {
   });
 });
 
-router.delete("/:id", (req, res) => {
+router.delete("/:id", requireAuthentication({
+    role: "instructor",
+    filter: async req => {
+        const assignmentId = req.params.id;
+        const assignment = await Assignment.findById(assignmentId);
+        if (!assignment) {
+            return false;
+        }
+        const courseId = assignment.courseId.toString();
+        const course = await Course.findById(courseId);
+        if (!course) {
+            return false;
+        }
+        const instructorId = course.instructorId.toString();
+        const user = await User.findById(req.userId!);
+        return user.role === "admin" || user.id == instructorId;
+    }
+}), async(req, res) => {
   const assignmentId = req.params.id;
-  // TODO: Implement
+  const assignment = await Assignment.findById(assignmentId)
   res.status(204).send();
 });
 
