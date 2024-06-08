@@ -1,5 +1,12 @@
 import { Router } from "express";
+import {
+  AuthenticatedRequest,
+  requireAuthentication,
+} from "../util/authentication.js";
 import { Assignment } from "../models/assignments.js";
+import { Course } from "../models/courses.js";
+import { Parser } from "json2csv"
+import { connection } from "../firebase.js";
 
 const router = Router();
 
@@ -16,16 +23,46 @@ router.get("/:id/assignments", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
-router.get("/:id/roster", (req, res) => {
-  const courseId = req.params.id;
-  // TODO: Implement
+//Not positive this works. Can you take a look at it daniel?
+router.get(
+  "/:id/roster",
+  requireAuthentication({
+    filter: (req: AuthenticatedRequest) => {
+      const user = req.user!;
+      return user.role === "instructor" || user.role === "admin";
+    },
+  }),
+  async (req: AuthenticatedRequest, res) => {
+    const courseId = req.params.id;
   try {
+  
+    const course = await Course.findById(courseId);
 
-  } catch (error) {
+    if (!course) {
+      return res.status(404).json({error: "Course not found"});
+    }
 
-  }
-  res.send('123,"Jane Doe",doej@oregonstate.edu\n...');
+    const studentRoster = await connection.collection('users').where('id', 'in', course.studentIds).get();
+    const students = studentRoster.docs.map(doc => doc.data());
+
+    //extract student info
+    const studentData = students.map(student=> ({
+      id: student.id,
+      name: student.name,
+      email: student.email,
+    }));
+
+    // Convert the student information to CSV
+    const json2csvParser = new Parser({ fields: ['id', 'name', 'email'] });
+    const csv = json2csvParser.parse(studentData);
+
+    res.setHeader('Content-Disposition', `attachment; filename=roster_${courseId}.csv`);
+    res.setHeader('Content-Type', 'text/csv');
+    res.send(csv);
+    } catch (error) {
+      console.error('Error fetching course roster:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 router.post("/:id/students", (req, res) => {
