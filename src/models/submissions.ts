@@ -12,7 +12,6 @@ export interface SubmissionType extends ModelType {
 }
 
 export class Submission extends Model implements SubmissionType {
-  //Fields
   assignmentId: string;
   studentId: string;
   timestamp: string; //Date

@@ -13,7 +13,6 @@ export interface CourseType extends ModelType {
 }
 
 export class Course extends Model implements CourseType {
-  //Fields
   subject: string;
   classNumber: string;
   title: string;
