@@ -56,12 +56,24 @@ router.patch("/:id", allowedInBody(["title", "points", "due"]), requireAuthentic
         const instructorId = course.instructorId.toString();
         const user = await User.findById(req.userId!);
         return user.role === "admin" || user.id === instructorId;
+        }
+    }), async (req, res) => {
+
+    const assignmentId = req.params.id;
+    const assignmentData = req.body;
+    const savedAssignment = await Assignment.findById(assignmentId);
+
+    try {
+        Object.keys(assignmentData).forEach( key => {
+        (savedAssignment as any)[key] = assignmentData[key]
+        });
+
+        const assignment = savedAssignment.save();
+        res.status(200).json({message: "Updated assignment", assignment: assignment});
+
+    } catch (error) {
+        res.status(400).json({error: "Failed to update assignment"});
     }
-}), async (req, res) => {
-  const assignmentId = req.params.id;
-  const assignmentData = req.body;
-  
-  res.status(200).send();
 });
 
 router.get("/:id", async (req, res) => {
@@ -85,7 +97,9 @@ router.post("/", requiredInBody(["courseId", "title", "points", "due"]), require
     filter: async req => {
         const courseId = req.body.courseId;
         const course = await Course.findById(courseId);
-        // TODO: handle case if course doesn't exist
+        if (!course) {
+            return false;
+        }
         const instructorId = course.instructorId.toString();
         const user = await User.findById(req.userId!);
         return user.role === "admin" || user.id === instructorId;
