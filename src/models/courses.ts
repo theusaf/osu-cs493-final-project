@@ -5,19 +5,21 @@ import { Model, ModelType } from "./model.js";
 
 export interface CourseType extends ModelType {
   subject: string;
-  classNumber: number;
+  classNumber: string;
   title: string;
   term: string;
-  instructorId: number;
+  instructorId: string;
+  studentIds: string[];
 }
 
 export class Course extends Model implements CourseType {
   //Fields
   subject: string;
-  classNumber: number;
+  classNumber: string;
   title: string;
   term: string;
-  instructorId: number;
+  instructorId: string;
+  studentIds: string[];
 
   constructor(data: CourseType) {
     super(data.id, FirestoreCollection.COURSES);
@@ -26,16 +28,24 @@ export class Course extends Model implements CourseType {
     this.title = data.title;
     this.term = data.term;
     this.instructorId = data.instructorId;
+    this.studentIds = data.studentIds;
   }
 
-  toJSON(): CourseType {
+  /**
+   * Returns a JSON representation of the course.
+   *
+   * While internally, the number is stored as `classNumber`,
+   * the JSON representation should use `number` according to spec.
+   */
+  toJSON(): Omit<CourseType, "classNumber"> & { number: string } {
     return {
       id: this.id,
       subject: this.subject,
-      classNumber: this.classNumber,
+      number: this.classNumber,
       title: this.title,
       term: this.term,
       instructorId: this.instructorId,
+      studentIds: this.studentIds,
     };
   }
 
