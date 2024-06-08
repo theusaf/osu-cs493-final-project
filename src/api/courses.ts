@@ -67,16 +67,16 @@ router.patch("/:id", (req, res) => {
   res.send();
 });
 
-router.get("/:id", (req, res) => {
+router.get("/:id", async (req, res) => {
   const courseId = req.params.id;
-  // TODO: Implement
-  res.json({
-    subject: "CS",
-    number: "493",
-    title: "Cloud Application Development",
-    term: "sp22",
-    instructorId: 123,
-  });
+  const course = await Course.findById(courseId);
+  if (course) {
+    const data: Record<string, unknown> = course.toJSON();
+    delete data.studentIds;
+    res.json(data);
+  } else {
+    res.status(404).json({ error: "Course not found" });
+  }
 });
 
 router.post(
@@ -126,7 +126,11 @@ router.get("/", async (req, res) => {
   if (term) options.where!.term = `${term}`;
   const results = await Course.findAll(options);
   res.json({
-    courses: results.map((course) => course.toJSON()),
+    courses: results.map((course) => {
+      const data: Record<string, unknown> = course.toJSON();
+      delete data.studentIds;
+      return data;
+    }),
   });
 });
 
