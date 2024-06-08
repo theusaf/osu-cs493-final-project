@@ -1,76 +1,81 @@
 import { Router } from "express";
+import {
+  PartiallyAuthenticatedRequest,
+  createSessionToken,
+  hash,
+  verify,
+} from "../util/authentication.js";
+import { User, UserType } from "../models/users.js";
+
 const router = Router();
-const express = require('express');
-const jwt = require('jsonwebtoken')
-const bcrypt = require('bcryptjs');
 
-const users = [
-    {
-      id: 1,
-      name: 'John Doe',
-      email: 'john@example.com',
-      password: 'password123',
-      role: 'student'
-    },
-    {
-      id: 2,
-      name: 'Jane Smith',
-      email: 'jane@example.com',
-      password: 'password456',
-      role: 'teacher'
-    }
-  ];
+router.get("/:id", (req, res) => {
+  const userId = req.params.id;
+  // TODO: Implement
+  res.json({
+    name: "Jane Doe",
+    email: "doej@oregonstate.edu",
+    password: "hunter2",
+    role: "student",
+  });
+});
 
-// POST /users
-router.post('/', async (req, res) => {
-  // TODO: Implement logic to create a new User
-  // - Validate the request body
-  // - Check if the authenticated User has 'admin' role for creating 'admin' or 'instructor' roles
-  // - Create and store the new User in the database
-  // - Return the ID of the newly created User with a 201 status code
-  // - Return appropriate error responses if needed
-  try {
-    const { name, email, password, role} = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-  
-    // TODO: Validate the request body
-
-    const newUser = await User.create({ //User to be included from models
-        id: users.length + 1,
-        name,
-        email,
-        password,
-        role,
+router.post("/", async (req: PartiallyAuthenticatedRequest, res) => {
+  const loggedUserId = req.userId;
+  const userData = req.body;
+  if (
+    typeof userData.name !== "string" ||
+    typeof userData.email !== "string" ||
+    typeof userData.password !== "string" ||
+    typeof userData.role !== "string"
+  ) {
+    return res.status(400).json({
+      error: "Invalid data",
     });
-
-    users.push(newUser);
-    res.status(201).json({ id: newUser.id });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
+  }
+  if (!["admin", "instructor", "student"].includes(userData.role)) {
+    return res.status(400).json({
+      error: "Invalid data",
+    });
+  }
+  if (["admin", "instructor"].includes(userData.role)) {
+    const sendUnauthorized = () => {
+      res.status(403).json({
+        error: "Unauthorized",
+      });
+    };
+    if (!loggedUserId) return sendUnauthorized();
+    const user = await User.findById(loggedUserId);
+    if (user.role !== "admin") return sendUnauthorized();
+  }
+  const newUser = new User({
+    name: userData.name,
+    email: userData.email,
+    password: await hash(userData.password),
+    role: userData.role,
+  });
+  await newUser.save();
+  res.status(201).json({
+    id: newUser.id,
+  });
 });
 
-// POST /users/login
-router.post('/login', (req, res) => {
-  // TODO: Implement logic to authenticate a User
-  // - Validate the request body (email and password)
-  // - Check if the provided email and password match a User in the database
-  // - If authenticated, generate and return a JWT token with a 200 status code
-  // - Return appropriate error responses if needed
+router.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  const sendError = () => {
+    res.status(401).json({
+      error: "Invalid email or password",
+    });
+  };
+  if (typeof email !== "string" || typeof password !== "string") {
+    return sendError();
+  }
+  const [user] = await User.findAll({ where: { email }, limit: 1 });
+  if (!user) return sendError();
+  if (!(await verify(user.password, password))) return sendError();
+  res.json({
+    token: createSessionToken(user.id!),
+  });
 });
-
-// GET /users/{id}
-router.get('/:id', (req, res) => {
-  // TODO: Implement logic to fetch data about a specific User
-  // - Check if the authenticated User's ID matches the requested User's ID
-  // - If authorized, fetch the User data from the database
-  // - If the User has 'instructor' role, include the list of taught Course IDs
-  // - If the User has 'student' role, include the list of enrolled Course IDs
-  // - Return the User data with a 200 status code
-  // - Return appropriate error responses if needed
-});
-
 
 export default router;

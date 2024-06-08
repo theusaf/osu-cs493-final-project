@@ -1,26 +1,26 @@
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import dotenv from "dotenv";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: join(__dirname, ".env.local") });
+
 import assignmentsRouter from "./api/assignments.js";
 import coursesRouter from "./api/courses.js";
 import usersRouter from "./api/users.js";
 import express, { ErrorRequestHandler } from "express";
-import dotenv from "dotenv";
 import { withAuthenticated } from "./util/authentication.js";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: join(__dirname, ".env.local") });
+import { ratelimit } from "./util/ratelimit.js";
 
 const app = express();
 
 // Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(withAuthenticated);
 
 // Rate-Limiting Middleware
-app.use((req, res, next) => {
-  // TOOD: Implement
-  next();
-});
+app.use(ratelimit);
 
 // Main Routes
 app.use("/assignments", assignmentsRouter);

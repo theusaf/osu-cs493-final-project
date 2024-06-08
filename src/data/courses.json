@@ -1,1 +1,50 @@
-[]
+[
+  {
+    "subject": "CS",
+    "number": "493",
+    "title": "Cloud Application Development",
+    "term": "sp22",
+    "instructorId": 123,
+    "id": "201"
+  },
+  {
+    "subject": "CS",
+    "number": "494",
+    "title": "Advanced Web Development",
+    "term": "sp22",
+    "instructorId": 122,
+    "id": "205"
+  },
+  {
+    "subject": "CS",
+    "number": "450",
+    "title": "Introduction to Computer Graphics",
+    "term": "fa23",
+    "instructorId": 120,
+    "id": "210"
+  },
+  {
+    "subject": "CS",
+    "number": "372",
+    "title": "Introduction to Networks",
+    "term": "wn23",
+    "instructorId": 123,
+    "id": "204"
+  },
+  {
+    "subject": "MTH",
+    "number": "314",
+    "title": "Introduction to Statistics",
+    "term": "sp24",
+    "instructorId": 162,
+    "id": "203"
+  },
+  {
+    "subject": "LAME",
+    "number": "782",
+    "title": "Masters Course in being Lazy",
+    "term": "sm83",
+    "instructorId": 1,
+    "id": "206"
+  }
+]

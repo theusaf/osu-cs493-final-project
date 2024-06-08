@@ -1,6 +1,7 @@
 import argon2 from "argon2";
 import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import { User, UserType } from "../models/users.js";
 
 /**
  * Hashes a plaintext password.
@@ -56,13 +57,21 @@ export function extractSession(req: Request): string | null {
   }
 }
 
-export interface AuthenticatedRequest extends Request {
+export interface PartiallyAuthenticatedRequest extends Request {
   userId?: string | null;
 }
 
+export interface AuthenticatedRequest extends Request {
+  userId?: string;
+  user?: User;
+}
+
+/**
+ * Middleware to read the user's session token and add the user ID to the request.
+ */
 export function withAuthenticated(
-  req: AuthenticatedRequest,
-  res: Response,
+  req: PartiallyAuthenticatedRequest,
+  _: Response,
   next: NextFunction,
 ) {
   const userId = extractSession(req);
@@ -72,17 +81,57 @@ export function withAuthenticated(
 
 type Awaitable<T> = T | Promise<T>;
 
-export function requireAuthentication(opts?: {
-  admin?: boolean;
+interface RequireAuthenticatedOptions {
+  /**
+   * The role(s) required to access the route.
+   */
+  role?: UserType["role"] | UserType["role"][];
+
+  /**
+   * A function to filter requests based on additional criteria.
+   *
+   * @param req The request.
+   * @returns Whether the request is allowed.
+   */
   filter?: (req: AuthenticatedRequest) => Awaitable<boolean>;
-}) {
-  const { admin = false, filter } = opts ?? {};
+}
+
+/**
+ * Middleware to require authentication. Upon failure, responds with a 403 Forbidden response.
+ *
+ * If needing to accept requests where authentication is optional, use custom middleware or logic instead.
+ *
+ * @param opts Options for the middleware. If omitted, only requires the user to be authenticated.
+ */
+export function requireAuthentication(opts?: RequireAuthenticatedOptions) {
+  const { role, filter } = opts ?? {};
   return async (
     req: AuthenticatedRequest,
     res: Response,
     next: NextFunction,
   ): Promise<void> => {
-    // TODO: Implement
+    const sendError = () => {
+      res.status(403).send({
+        error: "Unauthorized",
+      });
+    };
+
+    if (!req.userId) return sendError();
+    const user = await User.findById(req.userId);
+    req.user = user;
+    if (!user) return sendError();
+    if (user.role !== "admin") {
+      if (role) {
+        if (Array.isArray(role)) {
+          if (!role.includes(user.role)) return sendError();
+        } else {
+          if (role !== user.role) return sendError();
+        }
+      }
+      if (filter) {
+        if (!(await filter(req))) return sendError();
+      }
+    }
     next();
   };
 }
