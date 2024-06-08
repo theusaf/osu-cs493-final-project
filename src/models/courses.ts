@@ -22,12 +22,12 @@ export class Course extends Model implements CourseType {
 
   constructor(data: CourseType) {
     super(data.id, FirestoreCollection.COURSES);
-    this.subject = data.subject;
-    this.classNumber = data.classNumber;
-    this.title = data.title;
-    this.term = data.term;
-    this.instructorId = data.instructorId;
-    this.studentIds = data.studentIds;
+    this.subject = data.subject ?? "";
+    this.classNumber = data.classNumber ?? "000";
+    this.title = data.title ?? "";
+    this.term = data.term ?? "";
+    this.instructorId = data.instructorId ?? "000";
+    this.studentIds = data.studentIds ?? [];
   }
 
   /**
