@@ -3,6 +3,8 @@ import { Assignment } from "../models/assignments.js";
 import { QueryOptions } from "../types/database.js";
 import { Course, CourseType } from "../models/courses.js";
 import { PAGE_SIZE } from "../util/constants.js";
+import { requireAuthentication } from "../util/authentication.js";
+import { requiredInBody } from "../util/middleware.js";
 
 const router = Router();
 
@@ -77,13 +79,39 @@ router.get("/:id", (req, res) => {
   });
 });
 
-router.post("/", (req, res) => {
-  const courseData = req.body;
-  // TODO: Implement
-  res.status(201).json({
-    id: 123,
-  });
-});
+router.post(
+  "/",
+  requireAuthentication({
+    role: "admin",
+  }),
+  requiredInBody(["subject", "number", "title", "term", "instructorId"]),
+  async (req, res) => {
+    const { subject, number, title, term, instructorId } = req.body;
+    if (
+      typeof subject !== "string" ||
+      typeof number !== "string" ||
+      typeof title !== "string" ||
+      typeof term !== "string" ||
+      typeof instructorId !== "string"
+    ) {
+      return res.status(400).json({
+        error: "Invalid data",
+      });
+    }
+    const course = new Course({
+      subject,
+      classNumber: number,
+      title,
+      term,
+      instructorId,
+      studentIds: [],
+    });
+    await course.save();
+    res.status(201).json({
+      id: course.id,
+    });
+  },
+);
 
 router.get("/", async (req, res) => {
   const { page, subject, number, term } = req.query;
