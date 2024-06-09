@@ -56,43 +56,43 @@ describe("Admin", async () => {
       assert.strictEqual(response.status, 201);
       assert.strictEqual(typeof data.id, "string");
     });
-  });
 
-  test("Can create an instructor user", async () => {
-    const response = await displayFetch(`${API_BASE}/users`, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${adminToken}`,
-      },
-      method: "POST",
-      body: JSON.stringify({
-        name: "test",
-        email: "testing@example.com",
-        password: "password",
-        role: "instructor",
-      }),
+    test("Can create an instructor user", async () => {
+      const response = await displayFetch(`${API_BASE}/users`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${adminToken}`,
+        },
+        method: "POST",
+        body: JSON.stringify({
+          name: "test",
+          email: "testing@example.com",
+          password: "password",
+          role: "instructor",
+        }),
+      });
+      const data = await response.json();
+      assert.strictEqual(response.status, 201);
+      assert.strictEqual(typeof data.id, "string");
     });
-    const data = await response.json();
-    assert.strictEqual(response.status, 201);
-    assert.strictEqual(typeof data.id, "string");
-  });
 
-  test("Can create an student user", async () => {
-    const response = await displayFetch(`${API_BASE}/users`, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${adminToken}`,
-      },
-      method: "POST",
-      body: JSON.stringify({
-        name: "test",
-        email: "testing@example.com",
-        password: "password",
-        role: "student",
-      }),
+    test("Can create an student user", async () => {
+      const response = await displayFetch(`${API_BASE}/users`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${adminToken}`,
+        },
+        method: "POST",
+        body: JSON.stringify({
+          name: "test",
+          email: "testing@example.com",
+          password: "password",
+          role: "student",
+        }),
+      });
+      const data = await response.json();
+      assert.strictEqual(response.status, 201);
+      assert.strictEqual(typeof data.id, "string");
     });
-    const data = await response.json();
-    assert.strictEqual(response.status, 201);
-    assert.strictEqual(typeof data.id, "string");
   });
 });
