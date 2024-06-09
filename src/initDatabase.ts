@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { FirestoreCollection } from "./util/constants.js";
+import { hash } from "./util/authentication.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -15,6 +16,9 @@ const checkData = async (collectionName: string, jsonFilePath: string) => {
     const docSnapshot = await docRef.get();
 
     if (!docSnapshot.exists) {
+      if (collectionName === FirestoreCollection.USERS) {
+        doc.password = await hash(doc.password);
+      }
       await docRef.set(doc);
       console.log(`Document ${doc.id} added to collection`);
     } else {
