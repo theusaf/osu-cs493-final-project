@@ -1,4 +1,4 @@
-import { Router, Request, Response, NextFunction} from "express";
+import { Router } from "express";
 import { allowedInBody, requiredInBody } from "../util/middleware.js";
 import { requireAuthentication } from "../util/authentication.js";
 import { Course } from "../models/courses.js";
@@ -78,15 +78,17 @@ router.delete("/:id", requireAuthentication({
   }
 });
 
-router.patch("/:id", allowedInBody(["title", "points", "due"]), requireAuthentication({
+router.patch(
+  "/:id",
+  allowedInBody(["title", "points", "due"]),
+  requireAuthentication({
     role: "instructor",
-    filter: async req => {
-        const assignmentId = req.params.id;
-        const assignment = await Assignment.findById(assignmentId);
-        if(!assignment) {
-            return false;
-        }
-
+    filter: async (req) => {
+      const assignmentId = req.params.id;
+      const assignment = await Assignment.findById(assignmentId);
+      if (!assignment) {
+        return false;
+      }
         const courseId = assignment.courseId.toString();
         const course = await Course.findById(courseId);
         if (!course) {
@@ -120,19 +122,22 @@ router.get("/:id", async (req, res) => {
   const assignmentId = req.params.id;
 
   try {
-    const assignment = await Assignment.findById(assignmentId)
+    const assignment = await Assignment.findById(assignmentId);
     res.status(200).json({
-        courseId: assignment.courseId,
-        title: assignment.title,
-        points: assignment.points,
-        due: assignment.due,
+      courseId: assignment.courseId,
+      title: assignment.title,
+      points: assignment.points,
+      due: assignment.due,
     });
-    } catch (error) {
-        res.status(400).json({error: "Failed to get assignment by Id"});
-    }
+  } catch (error) {
+    res.status(400).json({ error: "Failed to get assignment by Id" });
+  }
 });
 
-router.post("/", requiredInBody(["courseId", "title", "points", "due"]), requireAuthentication({
+router.post(
+  "/",
+  requiredInBody(["courseId", "title", "points", "due"]),
+  requireAuthentication({
     role: "instructor",
     filter: async req => {
         const courseId = req.body.courseId;
@@ -145,16 +150,16 @@ router.post("/", requiredInBody(["courseId", "title", "points", "due"]), require
         return user.role === "admin" || user.id === instructorId;
     }
 }), async (req, res) => {
-  const assignmentData = req.body;
-
+  const assignmentData = req.body
   const assignment = new Assignment(assignmentData);
 
-  try {
-    const id = await assignment.save();
-    res.status(200).json({id: id,});
-  } catch (error) {
-    res.status(400).json({message: "Failed to post assignment"});
-  }
-});
+    try {
+      const id = await assignment.save();
+      res.status(200).json({ id: id });
+    } catch (error) {
+      res.status(400).json({ message: "Failed to post assignment" });
+    }
+  },
+);
 
 export default router;

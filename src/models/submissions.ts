@@ -4,28 +4,27 @@ import { FirestoreCollection } from "../util/constants.js";
 import { Model, ModelType } from "./model.js";
 
 export interface SubmissionType extends ModelType {
-  assignmentId: number;
-  studentId: number;
+  assignmentId: string;
+  studentId: string;
   timestamp: string; //Date
   grade: number;
   file: string;
 }
 
 export class Submission extends Model implements SubmissionType {
-  //Fields
-  assignmentId: number;
-  studentId: number;
+  assignmentId: string;
+  studentId: string;
   timestamp: string; //Date
   grade: number;
   file: string;
 
   constructor(data: SubmissionType) {
     super(data.id, FirestoreCollection.SUBMISSIONS);
-    this.assignmentId = data.assignmentId;
-    this.studentId = data.studentId;
-    this.timestamp = data.timestamp;
-    this.grade = data.grade;
-    this.file = data.file;
+    this.assignmentId = data.assignmentId ?? "";
+    this.studentId = data.studentId ?? "";
+    this.timestamp = data.timestamp ?? new Date(0).toISOString();
+    this.grade = data.grade ?? 0;
+    this.file = data.file ?? "";
   }
 
   toJSON(): SubmissionType {

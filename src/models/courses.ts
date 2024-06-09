@@ -5,37 +5,43 @@ import { Model, ModelType } from "./model.js";
 
 export interface CourseType extends ModelType {
   subject: string;
-  classNumber: number;
+  number: string;
   title: string;
   term: string;
-  instructorId: number;
+  instructorId: string;
+  studentIds: string[];
 }
 
 export class Course extends Model implements CourseType {
-  //Fields
   subject: string;
-  classNumber: number;
+  number: string;
   title: string;
   term: string;
-  instructorId: number;
+  instructorId: string;
+  studentIds: string[];
 
   constructor(data: CourseType) {
     super(data.id, FirestoreCollection.COURSES);
-    this.subject = data.subject;
-    this.classNumber = data.classNumber;
-    this.title = data.title;
-    this.term = data.term;
-    this.instructorId = data.instructorId;
+    this.subject = data.subject ?? "";
+    this.number = data.number ?? "000";
+    this.title = data.title ?? "";
+    this.term = data.term ?? "";
+    this.instructorId = data.instructorId ?? "000";
+    this.studentIds = data.studentIds ?? [];
   }
 
+  /**
+   * Returns a JSON representation of the course.
+   */
   toJSON(): CourseType {
     return {
       id: this.id,
       subject: this.subject,
-      classNumber: this.classNumber,
+      number: this.number,
       title: this.title,
       term: this.term,
       instructorId: this.instructorId,
+      studentIds: this.studentIds,
     };
   }
 

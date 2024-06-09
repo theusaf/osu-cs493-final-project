@@ -4,3 +4,5 @@ export enum FirestoreCollection {
   COURSES = "courses",
   SUBMISSIONS = "submissions",
 }
+
+export const PAGE_SIZE = 25;
