@@ -80,7 +80,7 @@ router.post("/:id/students", (req, res) => {
   res.send();
 });
 
-router.get("/:id/students", requireAuthentication, async (req, res) => {
+router.get("/:id/students", requireAuthentication(), async (req, res) => {
   try {
   const courseId = req.params.id;
   const course = await Course.findById(courseId);
