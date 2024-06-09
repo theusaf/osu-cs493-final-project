@@ -93,7 +93,7 @@ router.get("/:id/students", requireAuthentication, async (req, res) => {
   
   if (
     authUser.role !== "admin" &&
-    (authUser.role !== "instructor" || authUser._id !== course.instructorId)
+    (authUser.role !== "instructor" || authUser.id !== course.instructorId)
   ) {
     return res.status(403).json({ error: "Unauthorized" });
   }
