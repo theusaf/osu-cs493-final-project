@@ -127,7 +127,7 @@ router.post(
 );
 
 
-router.get("/:id/students", requireAuthentication(), async (req, res) => {
+router.get("/:id/students", requireAuthentication(), async (req: AuthenticatedRequest, res) => {
   try {
   const courseId = req.params.id;
   const course = await Course.findById(courseId);
@@ -136,7 +136,7 @@ router.get("/:id/students", requireAuthentication(), async (req, res) => {
     return res.status(404).json({ error: "Course not found" });
   }
   
-  const authUser = req.user;
+  const authUser = req.user!;
   
   if (
     authUser.role !== "admin" &&
