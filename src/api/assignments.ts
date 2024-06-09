@@ -17,66 +17,74 @@ router.post("/:id/submissions", (req, res) => {
   });
 });
 
-router.get("/:id/submissions", requireAuthentication({
+router.get(
+  "/:id/submissions",
+  requireAuthentication({
     role: "instructor",
-    filter: async req => {
-        const assignmentId = req.params.id;
-        const assignment = await Assignment.findById(assignmentId);
-        if (!assignment) {
-            return false;
-        }
-        const courseId = assignment.courseId.toString();
-        const course = await Course.findById(courseId);
-        if (!course) {
-            return false;
-        }
-        const instructorId = course.instructorId.toString();
-        const user = await User.findById(req.userId!);
-        return user.role === "admin" || user.id == instructorId;
-    }
-}), (req, res) => {
-  const assignmentId = req.params.id;
-  // TODO: Implement
-  res.json({
-    submissions: [
-      {
-        assignmentId: 123,
-        studentId: 123,
-        timestamp: "2022-06-14T17:00:00-07:00",
-        grade: 94.5,
-        file: "string",
-      },
-    ],
-  });
-});
+    filter: async (req) => {
+      const assignmentId = req.params.id;
+      const assignment = await Assignment.findById(assignmentId);
+      if (!assignment) {
+        return false;
+      }
+      const courseId = assignment.courseId.toString();
+      const course = await Course.findById(courseId);
+      if (!course) {
+        return false;
+      }
+      const instructorId = course.instructorId.toString();
+      const user = await User.findById(req.userId!);
+      return user.role === "admin" || user.id == instructorId;
+    },
+  }),
+  (req, res) => {
+    const assignmentId = req.params.id;
+    // TODO: Implement
+    res.json({
+      submissions: [
+        {
+          assignmentId: 123,
+          studentId: 123,
+          timestamp: "2022-06-14T17:00:00-07:00",
+          grade: 94.5,
+          file: "string",
+        },
+      ],
+    });
+  },
+);
 
-router.delete("/:id", requireAuthentication({
+router.delete(
+  "/:id",
+  requireAuthentication({
     role: "instructor",
-    filter: async req => {
-        const assignmentId = req.params.id;
-        const assignment = await Assignment.findById(assignmentId);
-        if (!assignment) {
-            return false;
-        }
-        const courseId = assignment.courseId.toString();
-        const course = await Course.findById(courseId);
-        if (!course) {
-            return false;
-        }
-        const instructorId = course.instructorId.toString();
-        const user = await User.findById(req.userId!);
-        return user.role === "admin" || user.id == instructorId;
+    filter: async (req) => {
+      const assignmentId = req.params.id;
+      const assignment = await Assignment.findById(assignmentId);
+      if (!assignment) {
+        return false;
+      }
+      const courseId = assignment.courseId.toString();
+      const course = await Course.findById(courseId);
+      if (!course) {
+        return false;
+      }
+      const instructorId = course.instructorId.toString();
+      const user = await User.findById(req.userId!);
+      return user.role === "admin" || user.id == instructorId;
+    },
+  }),
+  async (req, res) => {
+    const assignmentId = req.params.id;
+    const assignment = await Assignment.findById(assignmentId);
+    try {
+      const deleted = await assignment.delete();
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Assignment not Deleted" });
     }
-}), async(req, res) => {
-  const assignmentId = req.params.id;
-  const assignment = await Assignment.findById(assignmentId);
-  try {
-    const deleted = await assignment.delete()
-    res.status(204).send();
-  } catch (error) {
-    res.status(500).json({error: "Assignment not Deleted"});
-  }
-});
+  },
+);
 
 router.patch(
   "/:id",
@@ -89,34 +97,34 @@ router.patch(
       if (!assignment) {
         return false;
       }
-        const courseId = assignment.courseId.toString();
-        const course = await Course.findById(courseId);
-        if (!course) {
-            return false;
-        }
-        
-        const instructorId = course.instructorId.toString();
-        const user = await User.findById(req.userId!);
-        return user.role === "admin" || user.id === instructorId;
-        }
-    }), async (req, res) => {
+      const courseId = assignment.courseId.toString();
+      const course = await Course.findById(courseId);
+      if (!course) {
+        return false;
+      }
 
+      const instructorId = course.instructorId.toString();
+      const user = await User.findById(req.userId!);
+      return user.role === "admin" || user.id === instructorId;
+    },
+  }),
+  async (req, res) => {
     const assignmentId = req.params.id;
     const assignmentData = req.body;
     const savedAssignment = await Assignment.findById(assignmentId);
 
     try {
-        Object.keys(assignmentData).forEach( key => {
-        (savedAssignment as any)[key] = assignmentData[key]
-        });
+      Object.keys(assignmentData).forEach((key) => {
+        (savedAssignment as any)[key] = assignmentData[key];
+      });
 
-        const assignment = savedAssignment.save();
-        res.status(200).json(assignment);
-
+      const assignment = savedAssignment.save();
+      res.status(200).json(assignment);
     } catch (error) {
-        res.status(400).json({error: "Failed to update assignment"});
+      res.status(400).json({ error: "Failed to update assignment" });
     }
-});
+  },
+);
 
 router.get("/:id", async (req, res) => {
   const assignmentId = req.params.id;
@@ -134,21 +142,25 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.post("/", requiredInBody(["courseId", "title", "points", "due"]), requireAuthentication({
+router.post(
+  "/",
+  requiredInBody(["courseId", "title", "points", "due"]),
+  requireAuthentication({
     role: "instructor",
-    filter: async req => {
-        const courseId = req.body.courseId;
-        const course = await Course.findById(courseId);
-        if (!course) {
-            return false;
-        }
-        const instructorId = course.instructorId.toString();
-        const user = await User.findById(req.userId!);
-        return user.role === "admin" || user.id === instructorId;
-    }
-}), async (req, res) => {
-  const assignmentData = req.body
-  const assignment = new Assignment(assignmentData);
+    filter: async (req) => {
+      const courseId = req.body.courseId;
+      const course = await Course.findById(courseId);
+      if (!course) {
+        return false;
+      }
+      const instructorId = course.instructorId.toString();
+      const user = await User.findById(req.userId!);
+      return user.role === "admin" || user.id === instructorId;
+    },
+  }),
+  async (req, res) => {
+    const assignmentData = req.body;
+    const assignment = new Assignment(assignmentData);
 
     try {
       const id = await assignment.save();
