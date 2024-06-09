@@ -72,7 +72,7 @@ router.delete("/:id", requireAuthentication({
   const assignment = await Assignment.findById(assignmentId);
   try {
     const deleted = await assignment.delete()
-    res.status(204);
+    res.status(204).send();
   } catch (error) {
     res.status(500).json({error: "Assignment not Deleted"});
   }
@@ -134,10 +134,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.post(
-  "/",
-  requiredInBody(["courseId", "title", "points", "due"]),
-  requireAuthentication({
+router.post("/", requiredInBody(["courseId", "title", "points", "due"]), requireAuthentication({
     role: "instructor",
     filter: async req => {
         const courseId = req.body.courseId;
