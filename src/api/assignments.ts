@@ -8,13 +8,33 @@ import { Submission } from "../models/submissions.js";
 
 const router = Router();
 
-router.post("/:id/submissions", (req, res) => {
+router.post("/:id/submissions", requireAuthentication({
+    role: "student",
+    filter: async req => {
+        const assignmentId = req.params.id;
+        const assignment = await Assignment.findById(assignmentId);
+        if (!assignment) {
+            return false;
+        }
+        const courseId = assignment.courseId.toString();
+        const course = await Course.findById(courseId);
+        if (!course) {
+            return false;
+        }
+        const isStudent = course.studentIds.includes(req.userId!);
+        return isStudent;
+    }
+}), async (req, res) => {
   const assignmentId = req.params.id;
   const submissionData = req.body;
-  // TODO: Implement
-  res.status(201).json({
-    id: 123,
-  });
+  const submission = new Submission(submissionData);
+
+  try {
+    const id = await submission.save();
+    res.status(201).json({ id: id });
+    } catch (error) {
+      res.status(400).json({ message: "Failed to post submission"});
+    }
 });
 
 router.get("/:id/submissions", requireAuthentication({
@@ -34,19 +54,16 @@ router.get("/:id/submissions", requireAuthentication({
         const user = await User.findById(req.userId!);
         return user.role === "admin" || user.id == instructorId;
     }
-}), (req, res) => {
+}), async (req, res) => {
   const assignmentId = req.params.id;
-  // TODO: Implement
-  res.json({
-    submissions: [
-      {
-        assignmentId: 123,
-        studentId: 123,
-        timestamp: "2022-06-14T17:00:00-07:00",
-        grade: 94.5,
-        file: "string",
-      },
-    ],
+  const assignment = await Assignment.findById(assignmentId);
+  const submissions = await Submission.findAll({
+    where: {
+        assignmentId: assignment.id
+    },});
+
+  res.status(200).json({
+    submissions: submissions,
   });
 });
 
