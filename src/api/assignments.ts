@@ -1,4 +1,4 @@
-import { Router, Request, Response, NextFunction} from "express";
+import { Router } from "express";
 import { allowedInBody, requiredInBody } from "../util/middleware.js";
 import { requireAuthentication } from "../util/authentication.js";
 import { Course } from "../models/courses.js";
@@ -38,69 +38,79 @@ router.delete("/:id", (req, res) => {
   res.status(204).send();
 });
 
-router.patch("/:id", allowedInBody(["title", "points", "due"]), requireAuthentication({
+router.patch(
+  "/:id",
+  allowedInBody(["title", "points", "due"]),
+  requireAuthentication({
     role: "instructor",
-    filter: async req => {
-        const assignmentId = req.params.id;
-        const assignment = await Assignment.findById(assignmentId);
-        if(!assignment) {
-            return false;
-        }
+    filter: async (req) => {
+      const assignmentId = req.params.id;
+      const assignment = await Assignment.findById(assignmentId);
+      if (!assignment) {
+        return false;
+      }
 
-        const courseId = assignment.courseId.toString();
-        const course = await Course.findById(courseId);
-        if (!course) {
-            return false;
-        }
-        
-        const instructorId = course.instructorId.toString();
-        const user = await User.findById(req.userId!);
-        return user.role === "admin" || user.id === instructorId;
-    }
-}), async (req, res) => {
-  const assignmentId = req.params.id;
-  const assignmentData = req.body;
-  
-  res.status(200).send();
-});
+      const courseId = assignment.courseId.toString();
+      const course = await Course.findById(courseId);
+      if (!course) {
+        return false;
+      }
+
+      const instructorId = course.instructorId.toString();
+      const user = await User.findById(req.userId!);
+      return user.role === "admin" || user.id === instructorId;
+    },
+  }),
+  async (req, res) => {
+    const assignmentId = req.params.id;
+    const assignmentData = req.body;
+
+    res.status(200).send();
+  },
+);
 
 router.get("/:id", async (req, res) => {
   const assignmentId = req.params.id;
 
   try {
-    const assignment = await Assignment.findById(assignmentId)
+    const assignment = await Assignment.findById(assignmentId);
     res.status(200).json({
-        courseId: assignment.courseId,
-        title: assignment.title,
-        points: assignment.points,
-        due: assignment.due,
+      courseId: assignment.courseId,
+      title: assignment.title,
+      points: assignment.points,
+      due: assignment.due,
     });
-    } catch (error) {
-        res.status(400).json({error: "Failed to get assignment by Id"});
-    }
-});
-
-router.post("/", requiredInBody(["courseId", "title", "points", "due"]), requireAuthentication({
-    role: "instructor",
-    filter: async req => {
-        const courseId = req.body.courseId;
-        const course = await Course.findById(courseId);
-        // TODO: handle case if course doesn't exist
-        const instructorId = course.instructorId.toString();
-        const user = await User.findById(req.userId!);
-        return user.role === "admin" || user.id === instructorId;
-    }
-}), async (req, res) => {
-  const assignmentData = req.body;
-
-  const assignment = new Assignment(assignmentData);
-
-  try {
-    const id = await assignment.save();
-    res.status(200).json({id: id,});
   } catch (error) {
-    res.status(400).json({message: "Failed to post assignment"});
+    res.status(400).json({ error: "Failed to get assignment by Id" });
   }
 });
+
+router.post(
+  "/",
+  requiredInBody(["courseId", "title", "points", "due"]),
+  requireAuthentication({
+    role: "instructor",
+    filter: async (req) => {
+      const courseId = req.body.courseId;
+      const course = await Course.findById(courseId);
+      // TODO: handle case if course doesn't exist
+      const instructorId = course.instructorId.toString();
+      const user = await User.findById(req.userId!);
+      return user.role === "admin" || user.id === instructorId;
+    },
+  }),
+  async (req, res) => {
+    const assignmentData = req.body;
+
+    const assignment = new Assignment(assignmentData);
+
+    try {
+      const id = await assignment.save();
+      res.status(200).json({ id: id });
+    } catch (error) {
+      res.status(400).json({ message: "Failed to post assignment" });
+    }
+  },
+);
 
 export default router;

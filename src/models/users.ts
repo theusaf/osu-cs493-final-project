@@ -18,10 +18,10 @@ export class User extends Model implements UserType {
 
   constructor(data: UserType) {
     super(data.id, FirestoreCollection.USERS);
-    this.name = data.name;
-    this.email = data.email;
-    this.password = data.password;
-    this.role = data.role;
+    this.name = data.name ?? "";
+    this.email = data.email ?? "";
+    this.password = data.password ?? "";
+    this.role = data.role ?? "student";
   }
 
   toJSON(): UserType {
