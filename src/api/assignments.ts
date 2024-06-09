@@ -51,7 +51,13 @@ router.delete("/:id", requireAuthentication({
     }
 }), async(req, res) => {
   const assignmentId = req.params.id;
-  const assignment = await Assignment.findById(assignmentId)
+  const assignment = await Assignment.findById(assignmentId);
+  try {
+    const deleted = await assignment.delete()
+    res.status(200).json({message: "Assignment Deleted"});
+  } catch (error) {
+    res.status(400).json({error: "Assignment not Deleted"});
+  }
   res.status(204).send();
 });
 
