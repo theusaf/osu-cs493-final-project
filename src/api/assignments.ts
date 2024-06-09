@@ -74,7 +74,7 @@ router.delete("/:id", requireAuthentication({
     const deleted = await assignment.delete()
     res.status(204);
   } catch (error) {
-    res.status(400).json({error: "Assignment not Deleted"});
+    res.status(500).json({error: "Assignment not Deleted"});
   }
 });
 
