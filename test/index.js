@@ -1,7 +1,16 @@
 // This file contains shared functions for testing
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+const __dirname = dirname(fileURLToPath(import.meta.url));
+import dotenv from "dotenv";
+dotenv.config({ path: join(__dirname, "../.env") });
+dotenv.config({ path: join(__dirname, "../.env.local") });
+
+export const API_BASE = `http://localhost:${process.env.PORT ?? 8000}`;
 
 export async function displayFetch(input, init) {
-  console.log(`==== ${input} ====`);
+  const inputString = `${init?.method ?? "GET"} ${input}`;
+  console.log(`==== ${inputString} ====`);
   const res = await fetch(input, init);
   const oldJson = res.json;
   const oldText = res.text;
@@ -10,7 +19,7 @@ export async function displayFetch(input, init) {
     return oldJson.apply(this, arguments).then((json) => {
       console.log("==> Body:");
       console.log(JSON.stringify(json, null, 2));
-      console.log(`=====${"=".repeat(input.toString().length)}=====`);
+      console.log(`=====${"=".repeat(inputString.toString().length)}=====`);
       return json;
     });
   };
@@ -18,7 +27,7 @@ export async function displayFetch(input, init) {
     return oldText.apply(this, arguments).then((text) => {
       console.log("==> Body:");
       console.log(text);
-      console.log(`=====${"=".repeat(input.toString().length)}=====`);
+      console.log(`=====${"=".repeat(inputString.toString().length)}=====`);
       return text;
     });
   };
