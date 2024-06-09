@@ -58,7 +58,6 @@ router.delete("/:id", requireAuthentication({
   } catch (error) {
     res.status(500).json({error: "Assignment not Deleted"});
   }
-  res.status(204).send();
 });
 
 router.patch("/:id", allowedInBody(["title", "points", "due"]), requireAuthentication({
