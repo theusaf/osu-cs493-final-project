@@ -73,12 +73,6 @@ router.get(
   },
 );
 
-router.post("/:id/students", (req, res) => {
-  const courseId = req.params.id;
-  const studentData = req.body;
-  // TODO: Implement
-  res.send();
-});
 
 router.post(
   "/:id/students",
