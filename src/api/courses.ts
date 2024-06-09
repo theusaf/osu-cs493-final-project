@@ -5,7 +5,6 @@ import {
 } from "../util/authentication.js";
 import { Assignment } from "../models/assignments.js";
 import { Parser } from "json2csv";
-import { connection } from "../firebase.js";
 import { QueryOptions } from "../types/database.js";
 import { Course, CourseType } from "../models/courses.js";
 import { PAGE_SIZE } from "../util/constants.js";
@@ -29,55 +28,50 @@ router.get("/:id/assignments", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-//Not positive this works. Can you take a look at it daniel?
+
 router.get(
   "/:id/roster",
-  requireAuthentication({
-    filter: (req: AuthenticatedRequest) => {
-      const user = req.user!;
-      return user.role === "instructor" || user.role === "admin";
-    },
-  }),
+  requireAuthentication({ role: "instructor" }),
   async (req: AuthenticatedRequest, res) => {
     const courseId = req.params.id;
-  try {
-  
-    const course = await Course.findById(courseId);
+    try {
+      const course = await Course.findById(courseId);
 
-    if (!course) {
-      return res.status(404).json({error: "Course not found"});
-    }
-
-    const studentRoster = await User.findAll({where: 
-      {
-        $in: 
-        [
-          {
-            id: course.studentIds
-          },
-        ],
+      if (!course) {
+        return res.status(404).json({ error: "Course not found" });
       }
-    });
 
-    //extract student info
-    const studentData = studentRoster.map(student=> ({
-      id: student.id,
-      name: student.name,
-      email: student.email,
-    }));
+      const studentRoster = await User.findAll({
+        where: {
+          $in: {
+            id: course.studentIds,
+          },
+        },
+      });
 
-    // Convert the student information to CSV
-    const json2csvParser = new Parser({ fields: ['id', 'name', 'email'] });
-    const csv = json2csvParser.parse(studentData);
+      // Extract student info
+      const studentData = studentRoster.map((student) => ({
+        id: student.id,
+        name: student.name,
+        email: student.email,
+      }));
 
-    res.setHeader('Content-Disposition', `attachment; filename=roster_${courseId}.csv`);
-    res.setHeader('Content-Type', 'text/csv');
-    res.send(csv);
+      // Convert the student information to CSV
+      const json2csvParser = new Parser({ fields: ["id", "name", "email"] });
+      const csv = json2csvParser.parse(studentData);
+
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=roster_${courseId}.csv`,
+      );
+      res.setHeader("Content-Type", "text/csv");
+      res.send(csv);
     } catch (error) {
-      console.error('Error fetching course roster:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      console.error("Error fetching course roster:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
-});
+  },
+);
 
 router.post("/:id/students", (req, res) => {
   const courseId = req.params.id;
@@ -135,12 +129,15 @@ router.patch(
       return res.status(404).json({ error: "Course not found" });
     }
     if (typeof subject === "string") course.subject = subject;
-    if (typeof number === "string") course.classNumber = number;
+    if (typeof number === "string") course.number = number;
     if (typeof title === "string") course.title = title;
     if (typeof term === "string") course.term = term;
     if (typeof instructorId === "string") course.instructorId = instructorId;
     await course.save();
-    const data: Record<string, unknown> = course.toJSON();
+    const data: Record<string, unknown> = course.toJSON() as unknown as Record<
+      string,
+      unknown
+    >;
     delete data.studentIds;
     res.send(data);
   },
@@ -150,7 +147,10 @@ router.get("/:id", async (req, res) => {
   const courseId = req.params.id;
   const course = await Course.findById(courseId);
   if (course) {
-    const data: Record<string, unknown> = course.toJSON();
+    const data: Record<string, unknown> = course.toJSON() as unknown as Record<
+      string,
+      unknown
+    >;
     delete data.studentIds;
     res.json(data);
   } else {
@@ -179,7 +179,7 @@ router.post(
     }
     const course = new Course({
       subject,
-      classNumber: number,
+      number: number,
       title,
       term,
       instructorId,
@@ -194,19 +194,20 @@ router.post(
 
 router.get("/", async (req, res) => {
   const { page, subject, number, term } = req.query;
-  let resultPage = Math.max(Number(page) || 1) || 1;
+  const resultPage = Math.max(Number(page) || 1) || 1;
   const options: QueryOptions<CourseType> = {
     limit: PAGE_SIZE,
     cursor: (resultPage - 1) * PAGE_SIZE,
     where: {},
   };
   if (subject) options.where!.subject = `${subject}`;
-  if (number) options.where!.classNumber = `${number}`;
+  if (number) options.where!.number = `${number}`;
   if (term) options.where!.term = `${term}`;
   const results = await Course.findAll(options);
   res.json({
     courses: results.map((course) => {
-      const data: Record<string, unknown> = course.toJSON();
+      const data: Record<string, unknown> =
+        course.toJSON() as unknown as Record<string, unknown>;
       delete data.studentIds;
       return data;
     }),

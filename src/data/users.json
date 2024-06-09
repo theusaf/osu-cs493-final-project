@@ -3,7 +3,8 @@
     "name": "Jill Hubbard",
     "email": "hubbardjill@oregonstate.edu",
     "password": "admin",
-    "role": "admin"
+    "role": "admin",
+    "id": "200"
   },
   {
     "name": "Beej Hall",
@@ -30,25 +31,29 @@
     "name": "Kevin Walsh",
     "email": "kevin@oregonstate.edu",
     "password": "login",
-    "role": "student"
+    "role": "student",
+    "id": "201"
   },
   {
     "name": "Shane Ludwig",
     "email": "shane@oregonstate.edu",
     "password": "school",
-    "role": "student"
+    "role": "student",
+    "id": "202"
   },
   {
     "name": "John Doe",
     "email": "doejohn@oregonstate.edu",
     "password": "hunter5",
-    "role": "student"
+    "role": "student",
+    "id": "203"
   },
   {
     "name": "Peter Dinklage",
     "email": "dinkp@oregonstate.edu",
     "password": "dwarf",
-    "role": "student"
+    "role": "student",
+    "id": "204"
   },
   {
     "name": "Kaguya Shinomiya",
@@ -68,6 +73,7 @@
     "name": "Jane Doe",
     "email": "doej@oregonstate.edu",
     "password": "hunter2",
-    "role": "student"
+    "role": "student",
+    "id": "205"
   }
 ]

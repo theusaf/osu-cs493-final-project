@@ -6,7 +6,7 @@ export type QueryWhereOptions<T> = {
   $gt?: Partial<T>;
   $le?: Partial<T>;
   $lt?: Partial<T>;
-  $in?: Array<Partial<Record<keyof T, T[keyof T][]>>>;
+  $in?: Partial<Record<keyof T, T[keyof T][]>>;
 } & Partial<T>;
 
 export interface QueryOptions<T> {
