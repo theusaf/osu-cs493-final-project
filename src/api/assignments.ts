@@ -91,7 +91,7 @@ router.patch("/:id", allowedInBody(["title", "points", "due"]), requireAuthentic
         });
 
         const assignment = savedAssignment.save();
-        res.status(200).json({message: "Updated assignment", assignment: assignment});
+        res.status(200).json(assignment.toJSON());
 
     } catch (error) {
         res.status(400).json({error: "Failed to update assignment"});
