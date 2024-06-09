@@ -20,4 +20,21 @@ describe("Instructor", async () => {
     assert.strictEqual(typeof data.token, "string");
     instructorToken = data.token;
   });
+
+  await test("Fetch specific user data", async () => {
+    const userId = "1"; // Can be replaced with any user id
+    const response = await displayFetch(`${API_BASE}/users/${userId}`, {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${instructorToken}`
+      },
+      method: "GET"
+    });
+    const data = await response.json();
+    assert.strictEqual(response.status, 200);
+    assert.strictEqual(data.id, userId);
+    assert.strictEqual(data.role, "instructor");
+    assert.ok(Array.isArray(data.courses));
+  });
+
 });
