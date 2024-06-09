@@ -10,24 +10,35 @@ export const API_BASE = `http://localhost:${process.env.PORT ?? 8000}`;
 
 export async function displayFetch(input, init) {
   const inputString = `${init?.method ?? "GET"} ${input}`;
-  console.log(`==== ${inputString} ====`);
   const res = await fetch(input, init);
   const oldJson = res.json;
   const oldText = res.text;
-  console.log(`==> Status: ${res.status}\n`);
+
+  function logResponse(body) {
+    console.log(`==== ${inputString} ====`);
+    if (init?.headers) {
+      console.log("==> Request Headers:");
+      console.log(JSON.stringify(init.headers, null, 2));
+    }
+    if (typeof init?.body === "string") {
+      console.log("==> Request Body:");
+      console.log(init.body);
+    }
+    console.log(`==> Response Status: ${res.status}`);
+    console.log("==> Response Body:");
+    console.log(body);
+    console.log(`=====${"=".repeat(inputString.toString().length)}=====`);
+  }
+
   res.json = function () {
     return oldJson.apply(this, arguments).then((json) => {
-      console.log("==> Body:");
-      console.log(JSON.stringify(json, null, 2));
-      console.log(`=====${"=".repeat(inputString.toString().length)}=====`);
+      logResponse(JSON.stringify(json, null, 2));
       return json;
     });
   };
   res.text = function () {
     return oldText.apply(this, arguments).then((text) => {
-      console.log("==> Body:");
-      console.log(text);
-      console.log(`=====${"=".repeat(inputString.toString().length)}=====`);
+      logResponse(text);
       return text;
     });
   };
