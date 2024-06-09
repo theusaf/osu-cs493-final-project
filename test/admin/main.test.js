@@ -20,4 +20,20 @@ describe("Admin", async () => {
     assert.strictEqual(typeof data.token, "string");
     adminToken = data.token;
   });
+
+  test("Logging in as admin with wrong password fails", async () => {
+    const response = await displayFetch(`${API_BASE}/users/login`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({
+        email: "hubbardjill@oregonstate.edu",
+        password: "wrongpassword",
+      }),
+    });
+    const data = await response.json();
+    assert.strictEqual(response.status, 401);
+    assert.strictEqual(typeof data.error, "string");
+  });
 });
