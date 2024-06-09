@@ -4,6 +4,7 @@ import { requireAuthentication } from "../util/authentication.js";
 import { Course } from "../models/courses.js";
 import { User } from "../models/users.js";
 import { Assignment } from "../models/assignments.js";
+import { Submission } from "../models/submissions.js";
 
 const router = Router();
 
@@ -16,7 +17,24 @@ router.post("/:id/submissions", (req, res) => {
   });
 });
 
-router.get("/:id/submissions", (req, res) => {
+router.get("/:id/submissions", requireAuthentication({
+    role: "instructor",
+    filter: async req => {
+        const assignmentId = req.params.id;
+        const assignment = await Assignment.findById(assignmentId);
+        if (!assignment) {
+            return false;
+        }
+        const courseId = assignment.courseId.toString();
+        const course = await Course.findById(courseId);
+        if (!course) {
+            return false;
+        }
+        const instructorId = course.instructorId.toString();
+        const user = await User.findById(req.userId!);
+        return user.role === "admin" || user.id == instructorId;
+    }
+}), (req, res) => {
   const assignmentId = req.params.id;
   // TODO: Implement
   res.json({
@@ -54,7 +72,7 @@ router.delete("/:id", requireAuthentication({
   const assignment = await Assignment.findById(assignmentId);
   try {
     const deleted = await assignment.delete()
-    res.status(200).json({message: "Assignment Deleted"});
+    res.status(204);
   } catch (error) {
     res.status(400).json({error: "Assignment not Deleted"});
   }
