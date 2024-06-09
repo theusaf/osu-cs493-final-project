@@ -5,10 +5,27 @@ import { Course } from "../models/courses.js";
 import { User } from "../models/users.js";
 import { Assignment } from "../models/assignments.js";
 import { Submission, SubmissionType } from "../models/submissions.js";
+import admin from "firebase-admin";
+import multer from "multer";
+import path from "path";
+
+const bucket = admin.storage().bucket();
+
+const storage = multer.memoryStorage();
+
+const allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+
+const upload = multer({
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    cb(null, allowedMimeTypes.includes(file.mimetype));
+  }
+}).single("file");
+
 
 const router = Router();
 
-router.post("/:id/submissions", requireAuthentication({
+router.post("/:id/submissions", requiredInBody(["assignmentId", "studentId", "timestamp"]), requireAuthentication({
     role: "student",
     filter: async req => {
         const assignmentId = req.params.id;
@@ -24,15 +41,16 @@ router.post("/:id/submissions", requireAuthentication({
         const isStudent = course.studentIds.includes(req.userId!);
         return isStudent;
     }
-}), async (req, res) => {
+}), upload.single("file"), async (req, res) => {
   const assignmentId = req.params.id;
   const submissionData = req.body;
+  
   const submission = new Submission({
     assignmentId: submissionData.assignmentId,
     studentId: submissionData.studentId,
     timestamp: submissionData.timestamp, //Date
     grade: -1,
-    file: submissionData.file
+    file: req.file
     });
 
   try {
