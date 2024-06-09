@@ -76,7 +76,6 @@ router.delete("/:id", requireAuthentication({
   } catch (error) {
     res.status(400).json({error: "Assignment not Deleted"});
   }
-  res.status(204).send();
 });
 
 router.patch("/:id", allowedInBody(["title", "points", "due"]), requireAuthentication({
@@ -110,7 +109,7 @@ router.patch("/:id", allowedInBody(["title", "points", "due"]), requireAuthentic
         });
 
         const assignment = savedAssignment.save();
-        res.status(200).json({message: "Updated assignment", assignment: assignment});
+        res.status(200).json(assignment);
 
     } catch (error) {
         res.status(400).json({error: "Failed to update assignment"});
