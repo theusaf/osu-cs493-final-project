@@ -25,11 +25,27 @@ export abstract class Model {
     if (!this.id) {
       const docRef = await connection
         .collection(this.#table)
-        .add(this.toJSON());
+        .add(this.#sanitize(this.toJSON()));
       this.id = docRef.id;
-      await connection.collection(this.#table).doc(this.id).set(this.toJSON());
+      await connection
+        .collection(this.#table)
+        .doc(this.id)
+        .set(this.#sanitize(this.toJSON()));
     } else {
-      await connection.collection(this.#table).doc(this.id).set(this.toJSON());
+      await connection
+        .collection(this.#table)
+        .doc(this.id)
+        .set(this.#sanitize(this.toJSON()));
     }
+  }
+
+  #sanitize(data: Record<string, unknown>): Record<string, unknown> {
+    const sanitized: Record<string, unknown> = {};
+    for (const key in data) {
+      if (data[key] !== undefined) {
+        sanitized[key] = data[key];
+      }
+    }
+    return sanitized;
   }
 }
