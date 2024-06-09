@@ -4,7 +4,7 @@ import { requireAuthentication } from "../util/authentication.js";
 import { Course } from "../models/courses.js";
 import { User } from "../models/users.js";
 import { Assignment } from "../models/assignments.js";
-import { Submission } from "../models/submissions.js";
+import { Submission, SubmissionType } from "../models/submissions.js";
 
 const router = Router();
 
@@ -27,7 +27,13 @@ router.post("/:id/submissions", requireAuthentication({
 }), async (req, res) => {
   const assignmentId = req.params.id;
   const submissionData = req.body;
-  const submission = new Submission(submissionData);
+  const submission = new Submission({
+    assignmentId: submissionData.assignmentId,
+    studentId: submissionData.studentId,
+    timestamp: submissionData.timestamp, //Date
+    grade: -1,
+    file: submissionData.file
+    });
 
   try {
     const id = await submission.save();
