@@ -80,6 +80,59 @@ router.post("/:id/students", (req, res) => {
   res.send();
 });
 
+router.post(
+  "/:id/students",
+  requireAuthentication(),
+  async (req: AuthenticatedRequest, res) => {
+    const courseId = req.params.id;
+    const { add, remove } = req.body;
+
+    try {
+      const course = await Course.findById(courseId);
+
+      if (!course) {
+        return res.status(404).json({ error: "Course not found" });
+      }
+
+      const authUser = req.user;
+      if (!authUser) {
+        return res.status(404).json({ error: "User not found" });
+      } else if (
+        authUser.role !== "admin" &&
+        (authUser.role !== "instructor" || authUser.id !== course.instructorId)
+      ) {
+        return res.status(403).json({ error: "Unauthorized" });
+      }
+
+      if (add && Array.isArray(add)) {
+        for (const studentId of add) {
+          if (typeof studentId !== "string") {
+            return res.status(400).json({ error: "Invalid student ID" });
+          }
+          if (!course.studentIds.includes(studentId)) {
+            course.studentIds.push(studentId);
+          }
+        }
+      }
+
+      if (remove && Array.isArray(remove)) {
+        for (const studentId of remove) {
+          if (typeof studentId !== "string") {
+            return res.status(400).json({ error: "Invalid student ID" });
+          }
+          course.studentIds = course.studentIds.filter((id) => id !== studentId);
+        }
+      }
+      await course.save();
+      res.sendStatus(200);
+    } catch (error) {
+      console.error("Error updating enrolled students:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+
 router.get("/:id/students", requireAuthentication(), async (req, res) => {
   try {
   const courseId = req.params.id;
