@@ -80,20 +80,43 @@ router.post("/:id/students", (req, res) => {
   res.send();
 });
 
-router.get("/:id/students", (req, res) => {
+router.get("/:id/students", requireAuthentication, async (req, res) => {
+  try {
   const courseId = req.params.id;
-  // TODO: Implement
-  res.json({
-    students: [
-      {
-        name: "Jane Doe",
-        email: "doej@oregonstate.edu",
-        password: "hunter2",
-        role: "student",
-      },
-    ],
+  const course = await Course.findById(courseId);
+  
+  if (!course) {
+    return res.status(404).json({ error: "Course not found" });
+  }
+  
+  const authUser = req.user;
+  
+  if (
+    authUser.role !== "admin" &&
+    (authUser.role !== "instructor" || authUser._id !== course.instructorId)
+  ) {
+    return res.status(403).json({ error: "Unauthorized" });
+  }
+  
+  const students = course.studentIds;
+  
+  const studentsInClass = [];
+  for (let i = 0; i < students.length; i++ ){
+    const users = await User.findById(students[i]);
+      var temp = { 
+        name: users.name,
+        email: users.email,
+        role: users.role,
+      };
+      studentsInClass[i] = temp;
+  }
+  
+    res.json({ students: studentsInClass });
+  } catch (error) {
+    console.error("Error fetching enrolled students:", error);
+    res.status(500).json({ error: "Internal server error" });
+    }
   });
-});
 
 router.delete(
   "/:id",
