@@ -223,7 +223,7 @@ router.post(
 
     try {
       const id = await assignment.save();
-      res.status(200).json({ id: id });
+      res.status(201).json({ id: id });
     } catch (error) {
       res.status(400).json({ message: "Failed to post assignment" });
     }

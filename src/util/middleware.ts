@@ -13,8 +13,8 @@ export function requiredInBody(required: string[]) {
 
 export function allowedInBody(allowed: string[]) {
   return (req: Request, _: Response, next: NextFunction) => {
-    for (const attr of req.body) {
-      if (!(attr in allowed)) {
+    for (const attr in req.body) {
+      if (!(allowed.includes(attr))) {
         delete req.body[attr];
       }
     }
