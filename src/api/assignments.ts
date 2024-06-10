@@ -8,6 +8,7 @@ import { Submission, SubmissionType } from "../models/submissions.js";
 import admin from "firebase-admin";
 import multer from "multer";
 import path from "path";
+import { PAGE_SIZE } from "../util/constants.js";
 
 const bucket = admin.storage().bucket();
 
@@ -64,7 +65,7 @@ router.post("/:id/submissions", requiredInBody(["assignmentId", "studentId", "ti
   }
 });
 
-router.get("/:id/submissions/:page/:limit", requireAuthentication({
+router.get("/:id/submissions/:page", requireAuthentication({
     role: "instructor",
     filter: async req => {
         const assignmentId = req.params.id;
@@ -84,7 +85,7 @@ router.get("/:id/submissions/:page/:limit", requireAuthentication({
 }), async (req, res) => {
   const assignmentId = req.params.id;
   const page = parseInt(req.params.page);
-  const limit = parseInt(req.params.limit);
+  const limit = PAGE_SIZE;
   const offset = (page - 1) * limit;
   const assignment = await Assignment.findById(assignmentId);
   const submissions = await Submission.findAll({
