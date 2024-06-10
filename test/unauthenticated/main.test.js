@@ -5,8 +5,9 @@ import { displayFetch, API_BASE, fetchIgnoreRatelimit } from "../index.js";
 describe("Unauthenticated", () => {
   describe("can be rate-limited", async () => {
     const promises = [];
-    for (let i = 0; i < 25; i++) {
+    for (let i = 0; i < 15; i++) {
       promises.push(fetch(API_BASE));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
     const data = await Promise.all(promises);
     assert.ok(data.some((response) => response.status === 429));
@@ -123,6 +124,21 @@ describe("Unauthenticated", () => {
           );
         }),
       );
+    });
+  });
+
+  describe("using assignment api", () => {
+    test("can retrieve an assignment", async () => {
+      const response = await fetchIgnoreRatelimit(
+        displayFetch,
+        `${API_BASE}/assignments/1`,
+      );
+      const data = await response.json();
+      assert.strictEqual(response.status, 200);
+      assert.strictEqual(data.title, "Assignment 1");
+      assert.strictEqual(data.due, "2022-06-14T17:00:00-07:00");
+      assert.strictEqual(data.courseId, "201");
+      assert.strictEqual(data.points, 10);
     });
   });
 });

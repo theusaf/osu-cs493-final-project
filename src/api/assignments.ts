@@ -70,7 +70,7 @@ router.post(
 );
 
 router.get(
-  "/:id/submissions/:page",
+  "/:id/submissions",
   requireAuthentication({
     role: "instructor",
     filter: async (req) => {
@@ -91,7 +91,7 @@ router.get(
   }),
   async (req, res) => {
     const assignmentId = req.params.id;
-    const page = parseInt(req.params.page);
+    const page = parseInt(req.query.page as string) || 1;
     const limit = PAGE_SIZE;
     const offset = (page - 1) * limit;
     const assignment = await Assignment.findById(assignmentId);
