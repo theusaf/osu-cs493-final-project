@@ -20,7 +20,7 @@ const upload = multer({
   fileFilter: (req, file, cb) => {
     cb(null, allowedMimeTypes.includes(file.mimetype));
   }
-}).single("file");
+});
 
 
 const router = Router();
@@ -44,21 +44,24 @@ router.post("/:id/submissions", requiredInBody(["assignmentId", "studentId", "ti
 }), upload.single("file"), async (req, res) => {
   const assignmentId = req.params.id;
   const submissionData = req.body;
-  
-  const submission = new Submission({
+  const file = req.file;
+  if (file) {
+    const submission = new Submission({
     assignmentId: submissionData.assignmentId,
     studentId: submissionData.studentId,
     timestamp: submissionData.timestamp, //Date
     grade: -1,
-    file: req.file
+    file: file.buffer
     });
-
-  try {
-    const id = await submission.save();
-    res.status(201).json({ id: id });
-    } catch (error) {
-      res.status(400).json({ message: "Failed to post submission"});
-    }
+    try {
+      const id = await submission.save();
+      res.status(201).json({ id: id });
+      } catch (error) {
+        res.status(400).json({ message: "Failed to post submission"});
+      }
+  } else {
+    res.status(400).json({ message: "Failed to post submission"});
+  }
 });
 
 router.get("/:id/submissions/:page/:limit", requireAuthentication({

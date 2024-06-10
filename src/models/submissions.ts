@@ -8,7 +8,7 @@ export interface SubmissionType extends ModelType {
   studentId: string;
   timestamp: string; //Date
   grade: number;
-  file: string;
+  file: Buffer;
 }
 
 export class Submission extends Model implements SubmissionType {
@@ -16,7 +16,7 @@ export class Submission extends Model implements SubmissionType {
   studentId: string;
   timestamp: string; //Date
   grade: number;
-  file: string;
+  file: Buffer;
 
   constructor(data: SubmissionType) {
     super(data.id, FirestoreCollection.SUBMISSIONS);
@@ -24,7 +24,7 @@ export class Submission extends Model implements SubmissionType {
     this.studentId = data.studentId ?? "";
     this.timestamp = data.timestamp ?? new Date(0).toISOString();
     this.grade = data.grade ?? 0;
-    this.file = data.file ?? "";
+    this.file = data.file ?? Buffer.from("");
   }
 
   toJSON(): SubmissionType {
