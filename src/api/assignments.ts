@@ -52,7 +52,10 @@ router.post("/:id/submissions", requiredInBody(["assignmentId", "studentId", "ti
     studentId: submissionData.studentId,
     timestamp: submissionData.timestamp, //Date
     grade: -1,
-    file: file.buffer
+    file: file.buffer,
+    fileName: file.originalname,
+    type: file.mimetype,
+    fileURL: ""
     });
     try {
       const id = await submission.save();
