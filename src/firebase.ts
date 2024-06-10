@@ -14,6 +14,8 @@ admin.initializeApp({
   ),
 });
 
+export const storage = admin.storage();
+
 export const connection = admin.firestore();
 
 /**
