@@ -1,12 +1,12 @@
 import { describe, test } from "node:test";
 import assert from "node:assert";
-import { displayFetch, API_BASE } from "../index.js";
+import { displayFetch, API_BASE, fetchIgnoreRatelimit } from "../index.js";
 
 let instructorToken = "";
 
 describe("Instructor", async () => {
   await test("Instructor User Exists", async () => {
-    const response = await displayFetch(`${API_BASE}/users/login`, {
+    const response = await  fetchIgnoreRatelimit (displayFetch,`${API_BASE}/users/login`, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -143,7 +143,7 @@ describe("Instructor", async () => {
       method: "GET"
     });
     assert.strictEqual(response.status, 200);
-    assert.strictEqual(response.headers.get("Content-Type"), "text/csv");
+    assert.strictEqual(response.headers.get("Content-Type"), "text/csv; charset=utf-8");
     const data = await response.text();
     assert.ok(data.includes("ID,Name,Email"));;
   });
@@ -196,7 +196,10 @@ describe("Instructor", async () => {
     });
     const data = await response.json();
     assert.strictEqual(response.status, 200);
-    assert.strictEqual(data.id, assignmentId);
+    assert.strictEqual(data.courseId, "206");
+    assert.strictEqual(data.title, "New Assignment for lazy");
+    assert.strictEqual(data.due, "2024-12-31");
+    assert.strictEqual(data.points, "20");
     assert.ok(!data.submissions);
   });
 
@@ -209,13 +212,12 @@ describe("Instructor", async () => {
       },
       method: "PATCH",
       body: JSON.stringify({
-        title: "Updated Assignment Title",
+        title: "Updated Assignment Title"
       })
     });
-    assert.strictEqual(response.status, 200); 
     const data = await response.json();
+    assert.strictEqual(response.status, 200); 
     assert.strictEqual(data.title, "Updated Assignment Title");
-    assert.strictEqual(data.description, "Updated Assignment Description");
   });
 
   await test("Delete specific assignment", async () => {

@@ -177,8 +177,8 @@ router.patch(
         (savedAssignment as any)[key] = assignmentData[key];
       });
 
-      const assignment = await savedAssignment.save();
-      res.status(200).json(assignment);
+      await savedAssignment.save();
+      res.status(200).json(savedAssignment.toJSON());
     } catch (error) {
       res.status(400).json({ error: "Failed to update assignment" });
     }
@@ -222,8 +222,8 @@ router.post(
     const assignment = new Assignment(assignmentData);
 
     try {
-      const id = await assignment.save();
-      res.status(201).json({ id: id });
+      await assignment.save();
+      res.status(201).json({ id: assignment.id });
     } catch (error) {
       res.status(400).json({ message: "Failed to post assignment" });
     }
