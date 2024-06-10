@@ -157,6 +157,9 @@ router.patch(
     if (!course) {
       return res.status(404).json({ error: "Course not found" });
     }
+    if (Object.keys(req.body).length === 0) {
+      return res.status(400).json({ error: "Invalid data" });
+    }
     if (typeof subject === "string") course.subject = subject;
     if (typeof number === "string") course.number = number;
     if (typeof title === "string") course.title = title;
