@@ -19,6 +19,7 @@ export class Assignment extends Model implements AssignmentType {
   title: string;
   points: number;
   due: string;
+  start: string;
 
   constructor(data: AssignmentType) {
     super(data.id, FirestoreCollection.ASSIGNMENTS);
@@ -26,6 +27,7 @@ export class Assignment extends Model implements AssignmentType {
     this.title = data.title ?? "";
     this.points = data.points ?? 0;
     this.due = data.due ?? new Date(0).toISOString();
+    this.start = data.start ?? new Date(0).toISOString();
   }
 
   toJSON(): AssignmentType {
@@ -35,6 +37,7 @@ export class Assignment extends Model implements AssignmentType {
       title: this.title,
       points: this.points,
       due: this.due,
+      start: this.start,
     };
   }
 
