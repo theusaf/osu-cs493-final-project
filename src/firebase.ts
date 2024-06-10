@@ -85,7 +85,9 @@ export function recursiveWhere<T>(
   }
   if (where.$in) {
     for (const key in where.$in) {
-      query = query.where(key, "in", where.$in[key]);
+      if (where.$in[key]?.length) {
+        query = query.where(key, "in", where.$in[key]);
+      }
     }
   }
   for (const key in where) {
