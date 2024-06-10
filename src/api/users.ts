@@ -16,7 +16,7 @@ const router = Router();
 router.get(
   "/:id",
   requireAuthentication({
-    filter: (req) => req.params.id !== req.userId,
+    filter: (req) => req.params.id === req.userId,
   }),
   async (req: AuthenticatedRequest, res) => {
     const userId = req.params.id;
