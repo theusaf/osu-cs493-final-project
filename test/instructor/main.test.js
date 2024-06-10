@@ -26,9 +26,9 @@ describe("Instructor", async () => {
     const response = await displayFetch(`${API_BASE}/users/${userId}`, {
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${instructorToken}`
+        Authorization: `Bearer ${instructorToken}`,
       },
-      method: "GET"
+      method: "GET",
     });
     const data = await response.json();
     assert.strictEqual(response.status, 200);
@@ -36,5 +36,4 @@ describe("Instructor", async () => {
     assert.strictEqual(data.role, "instructor");
     assert.ok(Array.isArray(data.courses));
   });
-
 });

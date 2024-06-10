@@ -1,9 +1,7 @@
-import { connection, executeQuery } from "../firebase.js";
+import { connection, executeQuery, storage } from "../firebase.js";
 import { QueryOptions } from "../types/database.js";
 import { FirestoreCollection } from "../util/constants.js";
 import { Model, ModelType } from "./model.js";
-import admin from "firebase-admin";
-
 export interface SubmissionType extends ModelType {
   assignmentId: string;
   studentId: string;
@@ -37,16 +35,13 @@ export class Submission extends Model implements SubmissionType {
     this.fileURL = data.fileURL ?? "";
   }
 
-  toJSON(): SubmissionType {
+  toJSON(): Omit<SubmissionType, "file" | "type" | "fileName"> {
     return {
       id: this.id,
       assignmentId: this.assignmentId,
       studentId: this.studentId,
       timestamp: this.timestamp,
       grade: this.grade,
-      file: this.file,
-      type: this.type,
-      fileName: this.fileName,
       fileURL: this.fileURL,
     };
   }
@@ -64,38 +59,43 @@ export class Submission extends Model implements SubmissionType {
     });
   }
 
-  static async saveFileToStorage(fileBuffer: Buffer, fileName: string, contentType: string): Promise<string> {
-    const bucket = admin.storage().bucket();
+  static async saveFileToStorage(
+    fileBuffer: Buffer,
+    fileName: string,
+    contentType: string,
+  ): Promise<string> {
+    const bucket = storage.bucket();
     const file = bucket.file(fileName);
     const stream = file.createWriteStream({
       metadata: {
-        contentType: contentType
+        contentType: contentType,
       },
-      resumable: false
+      resumable: false,
     });
-  
+
     await new Promise<void>((resolve, reject) => {
-      stream.on('error', (err) => {
+      stream.on("error", (err) => {
         reject(err);
       });
-  
-      stream.on('finish', () => {
+
+      stream.on("finish", () => {
         resolve();
       });
-  
+
       stream.end(fileBuffer);
     });
-  
-    const [url] = await file.getSignedUrl({
-      action: 'read',
-      expires: '01-01-2100' // Set an appropriate expiration date
-    });
-  
+
+    await file.makePublic();
+    const url = file.publicUrl();
     return url;
   }
 
   async save() {
-    this.fileURL = await Submission.saveFileToStorage(this.file, this.fileName, this.type);
+    this.fileURL = await Submission.saveFileToStorage(
+      this.file,
+      this.fileName,
+      this.type,
+    );
     await super.save();
   }
 }
