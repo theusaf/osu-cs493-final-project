@@ -37,7 +37,7 @@ export class Assignment extends Model implements AssignmentType {
       title: this.title,
       points: this.points,
       due: this.due,
-      this.start: this.due,
+      start: this.start,
     };
   }
 
