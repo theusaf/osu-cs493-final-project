@@ -92,9 +92,13 @@ router.get("/:id/submissions/:page/:limit", requireAuthentication({
     cursor: offset
     
     });
-
+  const submissionUrls = submissions.map(submission => ({
+    id: submission.id,
+    url: `/submissions/${submission.id}`
+  }));
+  
   res.status(200).json({
-    submissions: submissions,
+      submissions: submissionUrls
   });
 });
 
