@@ -61,7 +61,7 @@ router.post("/:id/submissions", requiredInBody(["assignmentId", "studentId", "ti
     }
 });
 
-router.get("/:id/submissions", requireAuthentication({
+router.get("/:id/submissions/:page/:limit", requireAuthentication({
     role: "instructor",
     filter: async req => {
         const assignmentId = req.params.id;
@@ -80,11 +80,18 @@ router.get("/:id/submissions", requireAuthentication({
     }
 }), async (req, res) => {
   const assignmentId = req.params.id;
+  const page = parseInt(req.params.page);
+  const limit = parseInt(req.params.limit);
+  const offset = (page - 1) * limit;
   const assignment = await Assignment.findById(assignmentId);
   const submissions = await Submission.findAll({
     where: {
         assignmentId: assignment.id
-    },});
+    },
+    limit: limit,
+    cursor: offset
+    
+    });
 
   res.status(200).json({
     submissions: submissions,
