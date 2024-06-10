@@ -145,7 +145,7 @@ describe("Instructor", async () => {
     assert.strictEqual(response.status, 200);
     assert.strictEqual(response.headers.get("Content-Type"), "text/csv; charset=utf-8");
     const data = await response.text();
-    assert.ok(data.includes("ID,Name,Email"));;
+    assert.ok(data.includes("ID,Name,Email"));
   });
 
   await test("Fetch list of assignments in a course", async () => {
