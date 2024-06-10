@@ -165,7 +165,7 @@ router.patch(
         (savedAssignment as any)[key] = assignmentData[key]
         });
 
-        const assignment = savedAssignment.save();
+        const assignment =  await savedAssignment.save();
         res.status(200).json(assignment);
 
     } catch (error) {
