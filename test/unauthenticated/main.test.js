@@ -5,14 +5,11 @@ import { displayFetch, API_BASE, fetchIgnoreRatelimit } from "../index.js";
 describe("Unauthenticated", () => {
   describe("can be rate-limited", async () => {
     const promises = [];
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 25; i++) {
       promises.push(fetch(API_BASE));
     }
     const data = await Promise.all(promises);
-    assert.strictEqual(
-      data.some((response) => response.status === 429),
-      true,
-    );
+    assert.ok(data.some((response) => response.status === 429));
   });
 
   describe("using user api", () => {
@@ -88,6 +85,41 @@ describe("Unauthenticated", () => {
             typeof course.term === "string" &&
             typeof course.instructorId === "string" &&
             typeof course.studentIds === "undefined"
+          );
+        }),
+      );
+    });
+
+    test("can retrieve summary data about a course", async () => {
+      const response = await fetchIgnoreRatelimit(
+        displayFetch,
+        `${API_BASE}/courses/201`,
+      );
+      const data = await response.json();
+      assert.strictEqual(response.status, 200);
+      assert.strictEqual(data.id, "201");
+      assert.strictEqual(data.title, "Cloud Application Development");
+      assert.strictEqual(data.subject, "CS");
+      assert.strictEqual(data.number, "493");
+      assert.strictEqual(data.term, "sp22");
+    });
+
+    test("can retrieve a list of assignments for a course", async () => {
+      const response = await fetchIgnoreRatelimit(
+        displayFetch,
+        `${API_BASE}/courses/201/assignments`,
+      );
+      const data = await response.json();
+      assert.strictEqual(response.status, 200);
+      assert.ok(Array.isArray(data.assignments));
+      assert.ok(
+        data.assignments.every((assignment) => {
+          return (
+            typeof assignment.id === "string" &&
+            typeof assignment.title === "string" &&
+            typeof assignment.due === "string" &&
+            typeof assignment.courseId === "string" &&
+            typeof assignment.points === "number"
           );
         }),
       );
