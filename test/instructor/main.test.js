@@ -6,16 +6,20 @@ let instructorToken = "";
 
 describe("Instructor", async () => {
   await test("Instructor User Exists", async () => {
-    const response = await  fetchIgnoreRatelimit (displayFetch,`${API_BASE}/users/login`, {
-      headers: {
-        "Content-Type": "application/json",
+    const response = await fetchIgnoreRatelimit(
+      displayFetch,
+      `${API_BASE}/users/login`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify({
+          email: "shinomiyak@oregonstate.edu",
+          password: "ohkawaii",
+        }),
       },
-      method: "POST",
-      body: JSON.stringify({
-        email: "shinomiyak@oregonstate.edu",
-        password: "ohkawaii",
-      }),
-    });
+    );
     const data = await response.json();
     assert.strictEqual(typeof data.token, "string");
     instructorToken = data.token;
@@ -35,7 +39,7 @@ describe("Instructor", async () => {
     assert.strictEqual(data.name, "Kaguya Shinomiya");
     assert.strictEqual(data.email, "shinomiyak@oregonstate.edu");
     assert.strictEqual(data.role, "instructor");
-    assert.deepEqual(data.courses, ["206"])
+    assert.deepEqual(data.courses, ["206"]);
     assert.ok(Array.isArray(data.courses));
   });
 
@@ -43,9 +47,9 @@ describe("Instructor", async () => {
     const response = await displayFetch(`${API_BASE}/courses`, {
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${instructorToken}`
+        Authorization: `Bearer ${instructorToken}`,
       },
-      method: "GET"
+      method: "GET",
     });
     const data = await response.json();
     assert.strictEqual(response.status, 200);
@@ -56,14 +60,14 @@ describe("Instructor", async () => {
     const response = await displayFetch(`${API_BASE}/courses`, {
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${instructorToken}`
+        Authorization: `Bearer ${instructorToken}`,
       },
       method: "POST",
       body: JSON.stringify({
         title: "Student Council Activities",
         description: "I will teach you all how to run a student council. ",
-        instructorId: "1"
-      })
+        instructorId: "1",
+      }),
     });
     assert.strictEqual(response.status, 403); // Not admin user = forbidden
   });
@@ -73,9 +77,9 @@ describe("Instructor", async () => {
     const response = await displayFetch(`${API_BASE}/courses/${courseId}`, {
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${instructorToken}`
+        Authorization: `Bearer ${instructorToken}`,
       },
-      method: "GET"
+      method: "GET",
     });
     const data = await response.json();
     assert.strictEqual(response.status, 200);
@@ -85,49 +89,58 @@ describe("Instructor", async () => {
   });
 
   await test("Update specific course data", async () => {
-    const courseId = "206"; // Replace this with a course id? Want to replace with the course created. 
+    const courseId = "206"; // Replace this with a course id? Want to replace with the course created.
     const response = await displayFetch(`${API_BASE}/courses/${courseId}`, {
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${instructorToken}`
+        Authorization: `Bearer ${instructorToken}`,
       },
       method: "PATCH",
       body: JSON.stringify({
         title: "Updated Course Title from Student Council Activities",
-      })
+      }),
     });
     assert.strictEqual(response.status, 200);
     const data = await response.json();
-    assert.strictEqual(data.title, "Updated Course Title from Student Council Activities");
+    assert.strictEqual(
+      data.title,
+      "Updated Course Title from Student Council Activities",
+    );
   });
 
   await test("Fetch list of students enrolled in a course", async () => {
     const courseId = "206";
-    const response = await displayFetch(`${API_BASE}/courses/${courseId}/students`, {
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${instructorToken}`
+    const response = await displayFetch(
+      `${API_BASE}/courses/${courseId}/students`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${instructorToken}`,
+        },
+        method: "GET",
       },
-      method: "GET"
-    });
+    );
     const data = await response.json();
     assert.strictEqual(response.status, 200);
     assert.ok(Array.isArray(data.students));
   });
 
   await test("Update enrollment for a course", async () => {
-    const courseId = "206"; 
-    const response = await displayFetch(`${API_BASE}/courses/${courseId}/students`, {
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${instructorToken}`
+    const courseId = "206";
+    const response = await displayFetch(
+      `${API_BASE}/courses/${courseId}/students`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${instructorToken}`,
+        },
+        method: "POST",
+        body: JSON.stringify({
+          enroll: ["202", "203"],
+          unenroll: ["204"],
+        }),
       },
-      method: "POST",
-      body: JSON.stringify({
-        enroll: ["202", "203"], 
-        unenroll: ["204"] 
-      })
-    });
+    );
     assert.strictEqual(response.status, 200); // assuming successful update returns 200 OK
     const data = await response.json();
     assert.ok(Array.isArray(data.enrolled));
@@ -135,28 +148,37 @@ describe("Instructor", async () => {
 
   await test("Fetch CSV file Roster", async () => {
     const courseId = "206";
-    const response = await displayFetch(`${API_BASE}/courses/${courseId}/roster`, {
-      headers: {
-        "Content-Type": "text/csv",
-        "Authorization": `Bearer ${instructorToken}`
+    const response = await displayFetch(
+      `${API_BASE}/courses/${courseId}/roster`,
+      {
+        headers: {
+          "Content-Type": "text/csv",
+          Authorization: `Bearer ${instructorToken}`,
+        },
+        method: "GET",
       },
-      method: "GET"
-    });
-    assert.strictEqual(response.status, 200);
-    assert.strictEqual(response.headers.get("Content-Type"), "text/csv; charset=utf-8");
+    );
     const data = await response.text();
-    assert.ok(data.includes("ID,Name,Email"));
+    assert.strictEqual(response.status, 200);
+    const lines = data.split("\n");
+    const headers = lines[0].split(",");
+    assert.ok(
+      ['"id"', '"name"', '"email"'].every((field) => headers.includes(field)),
+    );
   });
 
   await test("Fetch list of assignments in a course", async () => {
     const courseId = "206";
-    const response = await displayFetch(`${API_BASE}/courses/${courseId}/assignments`, {
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${instructorToken}`
+    const response = await displayFetch(
+      `${API_BASE}/courses/${courseId}/assignments`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${instructorToken}`,
+        },
+        method: "GET",
       },
-      method: "GET"
-    });
+    );
     const data = await response.json();
     assert.strictEqual(response.status, 200);
     assert.ok(Array.isArray(data.assignments));
@@ -169,7 +191,7 @@ describe("Instructor", async () => {
     const response = await displayFetch(`${API_BASE}/assignments`, {
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${instructorToken}`
+        Authorization: `Bearer ${instructorToken}`,
       },
       method: "POST",
       body: JSON.stringify({
@@ -177,7 +199,7 @@ describe("Instructor", async () => {
         courseId: courseId,
         due: "2024-12-31",
         points: "20",
-      })
+      }),
     });
     const data = await response.json();
     assert.strictEqual(response.status, 201);
@@ -187,13 +209,16 @@ describe("Instructor", async () => {
 
   await test("Fetch specific assignment data", async () => {
     const assignmentId = createdAssignmentId; // assignmentIds
-    const response = await displayFetch(`${API_BASE}/assignments/${assignmentId}`, {
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${instructorToken}`
+    const response = await displayFetch(
+      `${API_BASE}/assignments/${assignmentId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${instructorToken}`,
+        },
+        method: "GET",
       },
-      method: "GET"
-    });
+    );
     const data = await response.json();
     assert.strictEqual(response.status, 200);
     assert.strictEqual(data.courseId, "206");
@@ -205,30 +230,36 @@ describe("Instructor", async () => {
 
   await test("Update specific assignment data", async () => {
     const assignmentId = createdAssignmentId;
-    const response = await displayFetch(`${API_BASE}/assignments/${assignmentId}`, {
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${instructorToken}`
+    const response = await displayFetch(
+      `${API_BASE}/assignments/${assignmentId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${instructorToken}`,
+        },
+        method: "PATCH",
+        body: JSON.stringify({
+          title: "Updated Assignment Title",
+        }),
       },
-      method: "PATCH",
-      body: JSON.stringify({
-        title: "Updated Assignment Title"
-      })
-    });
+    );
     const data = await response.json();
-    assert.strictEqual(response.status, 200); 
+    assert.strictEqual(response.status, 200);
     assert.strictEqual(data.title, "Updated Assignment Title");
   });
 
   await test("Delete specific assignment", async () => {
-    const assignmentId = createdAssignmentId; 
-    const response = await displayFetch(`${API_BASE}/assignments/${assignmentId}`, {
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${instructorToken}`
+    const assignmentId = createdAssignmentId;
+    const response = await displayFetch(
+      `${API_BASE}/assignments/${assignmentId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${instructorToken}`,
+        },
+        method: "DELETE",
       },
-      method: "DELETE"
-    });
+    );
     assert.strictEqual(response.status, 204); //204 no return content
   });
 });

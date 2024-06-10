@@ -41,13 +41,15 @@ router.get(
         return res.status(404).json({ error: "Course not found" });
       }
 
-      const studentRoster = await User.findAll({
-        where: {
-          $in: {
-            id: course.studentIds,
-          },
-        },
-      });
+      const studentRoster = course.studentIds.length
+        ? await User.findAll({
+            where: {
+              $in: {
+                id: course.studentIds,
+              },
+            },
+          })
+        : [];
 
       // Extract student info
       const studentData = studentRoster.map((student) => ({
