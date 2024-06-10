@@ -51,7 +51,7 @@ export async function fetchIgnoreRatelimit(fetchMethod, ...args) {
     if (response.status !== 429) {
       return response;
     } else {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 250));
     }
   }
 }
