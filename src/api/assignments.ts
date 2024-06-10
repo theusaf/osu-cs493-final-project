@@ -50,7 +50,7 @@ router.post(
       const submission = new Submission({
         assignmentId: submissionData.assignmentId,
         studentId: submissionData.studentId,
-        timestamp: submissionData.timestamp, //Date
+        timestamp: submissionData.timestamp.toISOString(), //Date
         grade: -1,
         file: file.buffer,
         fileName: file.originalname,
@@ -59,6 +59,14 @@ router.post(
       });
       try {
         const id = await submission.save();
+        try {
+          const assignment = await Assignment.findById(assignmentId);
+          const submissionIds = assignment.submissionIds;
+          assignment.submissionIds = submissionIds.append(id);
+          await assignment.save();
+        } catch (error) {
+          res.status(400).json({ message: "Failed to append submission id" });
+        }
         res.status(201).json({ id: id });
       } catch (error) {
         res.status(400).json({ message: "Failed to post submission" });
