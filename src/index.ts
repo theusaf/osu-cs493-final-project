@@ -38,7 +38,9 @@ app.use(((err, _req, res, _next) => {
   res.status(500).json({ message: err.message });
 }) as ErrorRequestHandler);
 
-await initDatabase();
+initDatabase().catch((error) => {
+  console.error("Failed to initialize database:", error);
+});
 
 app.listen(process.env.PORT ?? 3000, () => {
   console.log(
