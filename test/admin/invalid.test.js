@@ -125,4 +125,61 @@ describe("Invalid data", async () => {
       assert.strictEqual(typeof data.error, "string");
     });
   });
+
+  describe("assignment api", () => {
+    test("Create a new assignment with invalid data fails", async () => {
+      const response = await displayFetch(`${API_BASE}/assignments`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${adminToken}`,
+        },
+        method: "POST",
+        body: JSON.stringify({
+          title: "test",
+          courseId: "test",
+          points: "test",
+        }),
+      });
+      const data = await response.json();
+      assert.strictEqual(response.status, 400);
+      assert.strictEqual(typeof data.error, "string");
+    });
+
+    test("Update an assignment with invalid data fails", async () => {
+      // first, create an assignment to test
+      let assignmentId;
+      {
+        const response = await displayFetch(`${API_BASE}/assignments`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${adminToken}`,
+          },
+          method: "POST",
+          body: JSON.stringify({
+            title: "test",
+            courseId: "test",
+            due: "test",
+            points: 100,
+          }),
+        });
+        const data = await response.json();
+        assignmentId = data.id;
+      }
+
+      const response = await displayFetch(
+        `${API_BASE}/assignments/${assignmentId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${adminToken}`,
+          },
+          method: "PATCH",
+          body: JSON.stringify({}),
+        },
+      );
+      const data = await response.json();
+      assert.strictEqual(response.status, 400);
+      assert.strictEqual(typeof data.error, "string");
+    });
+  });
 });

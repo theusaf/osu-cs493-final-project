@@ -173,6 +173,9 @@ router.patch(
     const savedAssignment = await Assignment.findById(assignmentId);
 
     try {
+      if (Object.keys(assignmentData).length === 0) {
+        throw new Error("Invalid data");
+      }
       Object.keys(assignmentData).forEach((key) => {
         (savedAssignment as any)[key] = assignmentData[key];
       });
