@@ -12,6 +12,7 @@ admin.initializeApp({
   credential: admin.credential.cert(
     JSON.parse(process.env.FIREBASE_CREDENTIALS!),
   ),
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
 });
 
 export const storage = admin.storage();

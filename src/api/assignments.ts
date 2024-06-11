@@ -23,7 +23,6 @@ const router = Router();
 
 router.post(
   "/:id/submissions",
-  requiredInBody(["assignmentId", "studentId", "timestamp"]),
   requireAuthentication({
     role: "student",
     filter: async (req) => {
@@ -42,13 +41,14 @@ router.post(
     },
   }),
   upload.single("file"),
+  requiredInBody(["studentId", "timestamp"]),
   async (req, res) => {
     const assignmentId = req.params.id;
     const submissionData = req.body;
     const file = req.file;
     if (file) {
       const submission = new Submission({
-        assignmentId: submissionData.assignmentId,
+        assignmentId: assignmentId,
         studentId: submissionData.studentId,
         timestamp: submissionData.timestamp, //Date
         grade: -1,
@@ -58,9 +58,10 @@ router.post(
         fileURL: "",
       });
       try {
-        const id = await submission.save();
-        res.status(201).json({ id: id });
+        await submission.save();
+        res.status(201).json({ id: submission.id });
       } catch (error) {
+        console.log(error);
         res.status(400).json({ message: "Failed to post submission" });
       }
     } else {
@@ -102,13 +103,9 @@ router.get(
       limit: limit,
       cursor: offset,
     });
-    const submissionUrls = submissions.map((submission) => ({
-      id: submission.id,
-      url: `/submissions/${submission.id}`,
-    }));
 
     res.status(200).json({
-      submissions: submissionUrls,
+      submissions: submissions.map((submission) => submission.toJSON()),
     });
   },
 );
@@ -200,6 +197,7 @@ router.get("/:id", async (req, res) => {
       due: assignment.due,
     });
   } catch (error) {
+    console.log(error);
     res.status(400).json({ error: "Failed to get assignment by Id" });
   }
 });

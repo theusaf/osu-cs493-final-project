@@ -45,6 +45,9 @@
     "title": "Masters Course in being Lazy",
     "term": "sm83",
     "instructorId": "1",
-    "id": "206"
+    "id": "206",
+    "studentIds": [
+      "202"
+    ]
   }
 ]

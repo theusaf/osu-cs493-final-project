@@ -7,6 +7,7 @@ Spring 2024, CS 494 Final Project
 This project requires an `.env.local` file or environment variables to be set.
 
 - `FIREBASE_CREDENTIALS` - The JSON string of the Firebase admin credentials
+- `FIREBASE_STORAGE_BUCKET` - The Firebase storage bucket
 - `JWT_SECRET` - The secret key for JWT token generation
 
 ## Running the Project
