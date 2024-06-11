@@ -75,12 +75,38 @@ router.get(
   },
 );
 
-router.post("/:id/students", (req, res) => {
-  const courseId = req.params.id;
-  const studentData = req.body;
-  // TODO: Implement
-  res.send();
-});
+router.post(
+  "/:id/students",
+  allowedInBody(["add", "remove"]),
+  requireAuthentication({
+    role: "instructor",
+    filter: async (req) => {
+      const courseId = req.params.id;
+      const course = await Course.findById(courseId);
+      if (!course) return false;
+      return course.instructorId === req.userId;
+    },
+  }),
+  async (req, res) => {
+    const courseId = req.params.id;
+    const { add = [], remove = [] } = req.body;
+    if (!Array.isArray(add) || !Array.isArray(remove)) {
+      return res.status(400).json({ error: "Invalid data" });
+    }
+    const course = await Course.findById(courseId)!;
+    const studentIds = new Set(course.studentIds);
+    for (const studentId of add) {
+      studentIds.add(`${studentId}`);
+    }
+    for (const studentId of remove) {
+      studentIds.delete(`${studentId}`);
+    }
+    course.studentIds = Array.from(studentIds);
+    await course.save();
+
+    res.json(Array.from(studentIds));
+  },
+);
 
 router.get(
   "/:id/students",
@@ -156,6 +182,9 @@ router.patch(
     const course = await Course.findById(courseId);
     if (!course) {
       return res.status(404).json({ error: "Course not found" });
+    }
+    if (Object.keys(req.body).length === 0) {
+      return res.status(400).json({ error: "Invalid data" });
     }
     if (typeof subject === "string") course.subject = subject;
     if (typeof number === "string") course.number = number;

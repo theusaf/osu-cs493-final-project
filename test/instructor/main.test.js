@@ -3,6 +3,25 @@ import assert from "node:assert";
 import { displayFetch, API_BASE, fetchIgnoreRatelimit } from "../index.js";
 
 let instructorToken = "";
+let adminToken = "";
+{
+  const response = await fetchIgnoreRatelimit(
+    displayFetch,
+    `${API_BASE}/users/login`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({
+        email: "hubbardjill@oregonstate.edu",
+        password: "admin",
+      }),
+    },
+  );
+  const data = await response.json();
+  adminToken = data.token;
+}
 
 describe("Instructor", async () => {
   await test("Instructor User Exists", async () => {
@@ -39,8 +58,10 @@ describe("Instructor", async () => {
     assert.strictEqual(data.name, "Kaguya Shinomiya");
     assert.strictEqual(data.email, "shinomiyak@oregonstate.edu");
     assert.strictEqual(data.role, "instructor");
-    assert.deepEqual(data.courses, ["206"]);
     assert.ok(Array.isArray(data.courses));
+    // See courses.json for more details
+    assert.ok(data.courses.includes("206"));
+    assert.ok(!data.courses.includes("201"));
   });
 
   await test("Fetch all courses", async () => {
@@ -126,7 +147,28 @@ describe("Instructor", async () => {
   });
 
   await test("Update enrollment for a course", async () => {
-    const courseId = "206";
+    let courseId;
+    // Create a course for testing
+    {
+      // Create a course
+      const response = await displayFetch(`${API_BASE}/courses`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${adminToken}`,
+        },
+        method: "POST",
+        body: JSON.stringify({
+          title: "Test",
+          instructorId: "1",
+          subject: "CS",
+          number: "101",
+          term: "Fall",
+        }),
+      });
+      const data = await response.json();
+      courseId = data.id;
+    }
+    // Add students to the course
     const response = await displayFetch(
       `${API_BASE}/courses/${courseId}/students`,
       {
@@ -136,14 +178,65 @@ describe("Instructor", async () => {
         },
         method: "POST",
         body: JSON.stringify({
-          enroll: ["202", "203"],
-          unenroll: ["204"],
+          add: ["202", "203"],
         }),
       },
     );
-    assert.strictEqual(response.status, 200); // assuming successful update returns 200 OK
-    const data = await response.json();
-    assert.ok(Array.isArray(data.enrolled));
+    assert.strictEqual(response.status, 200);
+    const courseResponse = await displayFetch(
+      `${API_BASE}/courses/${courseId}/students`,
+      {
+        headers: {
+          Authorization: `Bearer ${instructorToken}`,
+        },
+      },
+    );
+    const data = await courseResponse.json();
+    assert.ok(Array.isArray(data.students));
+    assert.ok(
+      data.students.some(
+        (student) => student.email === "shane@oregonstate.edu",
+      ),
+    );
+    assert.ok(
+      data.students.some(
+        (student) => student.email === "doejohn@oregonstate.edu",
+      ),
+    );
+    const response2 = await displayFetch(
+      `${API_BASE}/courses/${courseId}/students`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${instructorToken}`,
+        },
+        method: "POST",
+        body: JSON.stringify({
+          remove: ["202"],
+        }),
+      },
+    );
+    assert.strictEqual(response2.status, 200);
+    const courseResponse2 = await displayFetch(
+      `${API_BASE}/courses/${courseId}/students`,
+      {
+        headers: {
+          Authorization: `Bearer ${instructorToken}`,
+        },
+      },
+    );
+    const data2 = await courseResponse2.json();
+    assert.ok(Array.isArray(data2.students));
+    assert.ok(
+      !data2.students.some(
+        (student) => student.email === "shane@oregonstate.edu",
+      ),
+    );
+    assert.ok(
+      data2.students.some(
+        (student) => student.email === "doejohn@oregonstate.edu",
+      ),
+    );
   });
 
   await test("Fetch CSV file Roster", async () => {

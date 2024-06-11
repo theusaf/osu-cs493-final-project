@@ -7,9 +7,9 @@ export interface SubmissionType extends ModelType {
   studentId: string;
   timestamp: string; //Date
   grade: number;
-  file: Buffer;
-  type: string;
-  fileName: string;
+  file?: Buffer;
+  type?: string;
+  fileName?: string;
   fileURL: string;
 }
 
@@ -18,9 +18,9 @@ export class Submission extends Model implements SubmissionType {
   studentId: string;
   timestamp: string; //Date
   grade: number;
-  file: Buffer;
-  type: string;
-  fileName: string;
+  file?: Buffer;
+  type?: string;
+  fileName?: string;
   fileURL: string;
 
   constructor(data: SubmissionType) {
@@ -91,11 +91,13 @@ export class Submission extends Model implements SubmissionType {
   }
 
   async save() {
-    this.fileURL = await Submission.saveFileToStorage(
-      this.file,
-      this.fileName,
-      this.type,
-    );
+    if (this.file) {
+      this.fileURL = await Submission.saveFileToStorage(
+        this.file,
+        this.fileName!,
+        this.type!,
+      );
+    }
     await super.save();
   }
 }

@@ -4,7 +4,7 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc && cp -r src/data dist/data",
+    "build": "tsc && mkdir -p dist/data && cp -r src/data/* dist/data",
     "start": "node .",
     "test": "node --test test"
   },
